@@ -1,7 +1,7 @@
 import { parseStringPromise } from 'xml2js';
 
 import { promises as fs } from 'fs';
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser,XMLBuilder } from 'fast-xml-parser';
 
 export async function readXmlFile(filePath: string) {
     try {
@@ -19,4 +19,17 @@ export async function readXmlFile(filePath: string) {
     }
 }
 
+
+export async function writeXMLFile(filePath: string, data: unknown): Promise<void> {
+  try {
+    const builder = new XMLBuilder({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_",
+    })
+    const xmlContent = builder.build(data)
+    await fs.writeFile(filePath, xmlContent, "utf-8")
+  } catch (error) {
+    throw new Error(`Error writing XML file: ${error}`)
+  }
+}
 
