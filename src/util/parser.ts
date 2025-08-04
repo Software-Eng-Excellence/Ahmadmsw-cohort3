@@ -18,7 +18,7 @@ export async function readCsvFile(filePath: string , includedHeader : Boolean = 
 
     return Promise.resolve(records); // what this return do ? //
     } catch (error) {
-        return Promise.reject(error);
+        throw new Error("error");
     }
   
 }
