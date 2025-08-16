@@ -3,3 +3,4 @@ node_modules
 .dummy.JSON
 .empty.JSON
 logs/
+coverage/
