@@ -1,15 +1,15 @@
 import { Toy } from "../toy.model";
 
 export class ToyBuilder {
-    private orderID!: number;
-    private type!: string;
-    private ageGroup!: string;
-    private brand!: string;
-    private material!: string;
-    private batteryRequired!: string;
-    private educational!: string;
-    private price!: number;
-    private quantity!: number;
+    private orderID: number = 1;
+    private type: string = "";
+    private ageGroup: string="";
+    private brand: string="";
+    private material: string="";
+    private batteryRequired: string="";
+    private educational: string="";
+    private price: number=0;
+    private quantity: number=0;
 
     setOrderID(orderID: number): ToyBuilder {
         this.orderID = orderID;
@@ -57,24 +57,7 @@ export class ToyBuilder {
     }
 
     build(): Toy {
-        const requiredProperties = [
-            this.orderID,
-            this.type,
-            this.ageGroup,
-            this.brand,
-            this.material,
-            this.batteryRequired,
-            this.educational,
-            this.price,
-            this.quantity
-        ];
-
-        for (const prop of requiredProperties) {
-            if (prop === undefined || prop === null) {
-                throw new Error("Missing required property. Failed to build a toy.");
-            }
-        }
-
+       
         return new Toy(
             this.orderID,
             this.type,

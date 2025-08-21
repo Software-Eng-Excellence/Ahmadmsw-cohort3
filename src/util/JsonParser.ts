@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 
-export async function readJsonFile(filePath: string , includedHeader : boolean = true) {
+export async function readJsonFile<T>(filePath: string , includedHeader : boolean = true): Promise<T> {
 
         try {
     const fileContent = await fs.readFile(filePath, 'utf8');
