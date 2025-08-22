@@ -1,7 +1,8 @@
 export enum ItemCategoty {
     CAKE = "cake",
     BOOK = 'book',
-    TOY = 'toy'
+    TOY = 'toy',
+    
 }
 
 export interface Item {

@@ -2,17 +2,18 @@ import { book } from "../book.model";
 import logger from "../../util/logger";
 
 export class BookBuilder {
-  private orderId!: string;
-  private title!: string;
-  private author!: string;
-  private genre!: string;
-  private format!: string;
-  private language!: string;
-  private publisher!: string;
-  private specialEdition!: string;
-  private packaging!: string;
-  private price!: number;
-  private quantity!: number;
+private orderId: string = "";
+private title: string = "";
+private author: string = "";
+private genre: string = "";
+private format: string = "";
+private language: string = "";
+private publisher: string = "";
+private specialEdition: string = "";
+private packaging: string = "";
+private price: number = 0;
+private quantity: number = 0;
+
 
   setOrderId(orderId: string): BookBuilder {
     this.orderId = orderId;
@@ -70,25 +71,7 @@ export class BookBuilder {
   }
 
   build(): book {
-    const requiredProperties = [
-      this.orderId,
-      this.title,
-      this.author,
-      this.genre,
-      this.format,
-      this.language,
-      this.publisher,
-      this.specialEdition,
-      this.packaging,
-      this.price,
-      this.quantity,
-    ];
 
-    for (const prop of requiredProperties) {
-      if (prop === undefined || prop === null) {
-        throw new Error("Missing required property. Failed to build a book.");
-      }
-    }
 
     return new book(
       this.orderId,
