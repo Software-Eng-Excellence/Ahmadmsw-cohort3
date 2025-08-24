@@ -10,6 +10,7 @@ export class XMLToyMapper implements IMapper<{ [key: string]: string }, Toy> {
     map(data: { [key: string]: string }): Toy {
         const NewBuild = new ToyBuilder();
         return NewBuild
+            .setOrderID(parseInt(data["OrderID"]))
             .setType(data["Type"]??"")
             .setAgeGroup(data["AgeGroup"]??"")
             .setBrand(data["Brand"])

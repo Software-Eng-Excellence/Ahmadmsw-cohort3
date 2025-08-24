@@ -24,4 +24,26 @@ export class CSVCakeMapper implements IMapper<string[],cake> {
                                 .build()     // return the cake inside build
 
     }
+    reverseMap(data:cake):string[]{ 
+        return [
+           
+            data["type"],
+            data["flavor"],
+            data["filling"],
+            data["size"].toString(),
+            data["layers"].toString(),
+            data["frostingType"],
+            data["frostingFlavor"],
+            data["decorationType"],
+            data["decorationColor"],
+            data["customMessage"],
+            data["shape"],
+            data["allergies"],
+            data["specialIngredients"],
+            data["packagingType"],
+
+        ]
+
+    }
 }
+

@@ -42,7 +42,7 @@ export class XMLOrderMapper implements IMapper<{ [key: string]: string }, Order>
         const item: Item = this.itemMapper.map(data);
         const orderBuild = new OrderBuilder();
         return orderBuild
-            
+            .setId((data["OrderID"]) )
             .setQuantity(parseInt(data["Quantity"]))
             .setPrice(parseFloat(data["Price"]))
             .setItem(item)

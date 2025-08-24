@@ -1,9 +1,13 @@
 import { Item } from "../models/item.model";
 import { IOrder } from "./Iorder.model";
 
+
+
+
 export class Order implements IOrder {
 
-    constructor(private item: Item /* here is the bridge also */, private price: number, private quantity: number) {}
+
+    constructor(private item: Item /* here is the bridge also */, private price: number, private quantity: number, public id : string) {}
 
     getItem(): Item {
         return this.item;
@@ -15,5 +19,7 @@ export class Order implements IOrder {
     getQuantity(): number {
         return this.quantity;
     }
-
+    getId(): string {
+        return this.id;
+    }   
 }
