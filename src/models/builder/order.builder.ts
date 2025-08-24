@@ -5,6 +5,7 @@ export class OrderBuilder {
   private item!: Item;
   private price: number =0;
   private quantity: number=0;
+  private id!: string;
 
   setItem(item: Item): OrderBuilder {
     this.item = item;
@@ -23,8 +24,13 @@ export class OrderBuilder {
     return this;
     
   }
+  setId(id: string): OrderBuilder {
+    this.id = id;
+    return this;
+    
+  }
 
   build(): Order {
-    return new Order(this.item, this.price, this.quantity);
+    return new Order(this.item, this.price, this.quantity,this.id);
   }
 }

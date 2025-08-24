@@ -12,10 +12,10 @@ export class XMLToyMapper implements IMapper<{ [key: string]: string }, Toy> {
         return NewBuild
             .setType(data["Type"]??"")
             .setAgeGroup(data["AgeGroup"]??"")
-            .setBrand(data["Brand"])
-            .setMaterial(data["Material"])
-            .setBatteryRequired(data["BatteryRequired"])
-            .setEducational(data["Educational"])
+            .setBrand(data["Brand"]??"")
+            .setMaterial(data["Material"]??"")
+            .setBatteryRequired(data["BatteryRequired"]??"")
+            .setEducational(data["Educational"]??"")
 
             .build();
     }
