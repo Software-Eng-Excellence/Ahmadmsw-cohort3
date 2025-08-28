@@ -8,8 +8,7 @@ export class Toy implements Item {
     private material: string;
     private batteryRequired: string; // Could be boolean, but kept string to match XML format
     private educational: string;     // Could be boolean, but kept string to match XML format
-    private price: number;
-    private quantity: number;
+
 
     constructor(
         orderID: number,
@@ -19,8 +18,7 @@ export class Toy implements Item {
         material: string,
         batteryRequired: string,
         educational: string,
-        price: number,
-        quantity: number
+
     ) {
         this.orderID = orderID;
         this.type = type;
@@ -29,8 +27,7 @@ export class Toy implements Item {
         this.material = material;
         this.batteryRequired = batteryRequired;
         this.educational = educational;
-        this.price = price;
-        this.quantity = quantity;
+
     }
 
     getCategory(): ItemCategoty {
@@ -65,11 +62,5 @@ export class Toy implements Item {
         return this.educational;
     }
 
-    getPrice(): number {
-        return this.price;
-    }
 
-    getQuantity(): number {
-        return this.quantity;
-    }
 }

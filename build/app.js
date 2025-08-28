@@ -86,7 +86,7 @@ class validatePrice {
     validate(order) {
         if (order.price <= 0) {
             logger_1.default.error("Price must be greater than zero");
-            throw new Error("Price must be greater than zero");
+            throw new Error("Price must be greater than zero"); // what new error do ? it throw an error with this message ok if i get a throw error from the classes it is return to the sub class to the method validate ? // answer: yes it is return to the sub class to the method validate and i can catch it in the addorder method // but i do not set throw in the validate sub class so how can i catch it in the addorder method ? // answer: i can catch it in the addorder method by using try and catch block // ok // but how in the validate base class returns throw error ? // answer: the throw statement immediately exits the current function and returns the error to the caller
         }
     }
 }

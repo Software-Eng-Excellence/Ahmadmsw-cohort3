@@ -46,5 +46,5 @@ function writeCsvFile(filePath, data) {
             return Promise.reject(error);
         }
     });
-}
+} // what this writeCsvFile do ? // this function writes a 2D array of strings to a CSV file// iput the data from user in the parameter and writing it in the csv file ? // yes ? // yes
 //# sourceMappingURL=parser.js.map
