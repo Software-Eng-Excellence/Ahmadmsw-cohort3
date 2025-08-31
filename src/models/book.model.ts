@@ -33,6 +33,10 @@ export class book implements Item {
         this.specialEdition = specialEdition;
         this.packaging = packaging;
 
+
+    }
+    getOrderId(): string {
+        return this.orderId;
     }
        getCategory(): ItemCategoty {
         return ItemCategoty.BOOK; 

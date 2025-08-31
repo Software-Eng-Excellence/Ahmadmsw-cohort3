@@ -10,15 +10,27 @@ export class XMLToyMapper implements IMapper<{ [key: string]: string }, Toy> {
     map(data: { [key: string]: string }): Toy {
         const NewBuild = new ToyBuilder();
         return NewBuild
-            .setOrderID(parseInt(data["OrderID"]))
+            
             .setType(data["Type"]??"")
             .setAgeGroup(data["AgeGroup"]??"")
-            .setBrand(data["Brand"])
-            .setMaterial(data["Material"])
-            .setBatteryRequired(data["BatteryRequired"])
-            .setEducational(data["Educational"])
+            .setBrand(data["Brand"]??"")
+            .setMaterial(data["Material"]??"")
+            .setBatteryRequired(data["BatteryRequired"]??"")
+            .setEducational(data["Educational"]??"")
+            
 
             .build();
     }
+    reverseMap(data: Toy): ({ [key: string]: string; }) {
+        return {
+            
+            "Type": data.getType(),
+            "AgeGroup": data.getAgeGroup(),
+            "Brand": data.getBrand(),
+            "Material": data.getMaterial(),
+            "BatteryRequired": data.getBatteryRequired(),
+            "Educational": data.getEducational()
+        };
+}
 }
 

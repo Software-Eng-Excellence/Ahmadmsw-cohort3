@@ -1,26 +1,24 @@
 import { Toy } from "../toy.model";
 
 export class ToyBuilder {
-    private orderID: number = 1;
+    private orderID: string="";
     private type: string = "";
     private ageGroup: string="";
     private brand: string="";
     private material: string="";
     private batteryRequired: string="";
     private educational: string="";
-    private price: number=0;
-    private quantity: number=0;
 
-    setOrderID(orderID: number): ToyBuilder {
-        this.orderID = orderID;
-        return this;
-    }
+
 
     setType(type: string): ToyBuilder {
         this.type = type;
         return this;
     }
-
+    setOrderID(orderID: string): ToyBuilder {
+        this.orderID = orderID;
+        return this;
+    }
     setAgeGroup(ageGroup: string): ToyBuilder {
         this.ageGroup = ageGroup;
         return this;
@@ -51,14 +49,14 @@ export class ToyBuilder {
     build(): Toy {
        
         return new Toy(
-            this.orderID,
+           
             this.type,
             this.ageGroup,
             this.brand,
             this.material,
             this.batteryRequired,
-            this.educational,
-
+            this.educational
+ 
         );
     }
 }
