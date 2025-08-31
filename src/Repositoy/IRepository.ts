@@ -37,8 +37,8 @@ export interface ID {
  */
 export interface IRepository<T> {
     getAll(): Promise<T[]>;
-    getById(id: ID): Promise<T>;
-    create(item: T): Promise<ID>;
+    getById(id: string): Promise<T>;
+    create(item: T): Promise<string>;
     update(item: T): Promise<void>;
-    delete(id: ID): Promise<void>;
+    delete(id: string): Promise<void>;
 }

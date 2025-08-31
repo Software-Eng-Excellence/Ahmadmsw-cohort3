@@ -1,17 +1,17 @@
-import { IOrder } from "../../models/Iorder.model";
+import { Order } from "../../models/order.model";
 import { ID,IRepository } from "../IRepository";
 import logger from "../../util/logger";
 import {InvalidItemException,ItemNotFoundException} from "../../util/Exceptions/RepositoryExceptions"
 
 //abstact class i use it in the concrete classes and use load nad save methods with what and how i need to save and load
-export abstract class OrderRepository implements IRepository<IOrder >{
+export abstract class OrderRepository implements IRepository<Order >{
 
-    abstract save(item: IOrder[]): Promise<void> 
+    abstract save(item: Order[]): Promise<void> 
 
-    abstract load(): Promise<IOrder[]> ;
+    abstract load(): Promise<Order[]> ;
 
 
-     async getAll(): Promise<IOrder[]> {
+     async getAll(): Promise<Order[]> {
         return this.load();
         logger.info(`All orders retrieved successfully`);
         
@@ -19,20 +19,20 @@ export abstract class OrderRepository implements IRepository<IOrder >{
     }
 
 
-   async getById(id: ID): Promise<IOrder> {
+   async getById(id: string): Promise<Order> {
         const orders = await this.load();
-        const order = orders.find(order => order.getId() === id.getId());
+        const order = orders.find(order => order.getId() === id);
         if (!order) {
-            logger.error(`Order with id ${id.getId()} not found`);  
-            throw new Error("Order not found");
+            logger.error(`Order with id ${id} not found`);  
+            throw new ItemNotFoundException(`Order with id ${id} not found`);
         }
-        logger.info(`Order with id ${id.getId()} retrieved successfully`);
+        logger.info(`Order with id ${id} retrieved successfully`);
         return order ;
     }   
 
 
 
-   async create(item: IOrder): Promise<ID> {
+   async create(item: Order): Promise<string> {
         //validate :
         if(!item){
             throw new InvalidItemException("Invalid order");
@@ -44,14 +44,14 @@ export abstract class OrderRepository implements IRepository<IOrder >{
         //save data
         await this.save(orders);
         //return id
-        return {getId:()=>String(id)}; // return the id of the created order
+        return String(item.getId()); // return the id of the created order
         logger.info(`Order with id ${id} created successfully`);
     }
 
 
 
 
-   async update(item: IOrder): Promise<void> {
+   async update(item: Order): Promise<void> {
     if(!item){
         logger.error(`Updating Failed : Order cannot be null`);
         throw new InvalidItemException("Invalid order");
@@ -68,15 +68,15 @@ export abstract class OrderRepository implements IRepository<IOrder >{
     logger.info(`Order with id ${item.getId()} updated successfully`);
     
 }
-    async delete(id: ID): Promise<void> {
+    async delete(id: string): Promise<void> {
     const orders = await this.load();
-    const index = orders.findIndex(o => o.getId() === id.getId());
+    const index = orders.findIndex(o => o.getId() === id);
     if(index === -1){
-        logger.error(`Order with id ${id.getId()} not found`);
+        logger.error(`Order with id ${id} not found`);
         throw new ItemNotFoundException(`Item not found`);
     }
     orders.splice(index,1);
     await this.save(orders);
-    logger.info(`Order with id ${id.getId()} deleted successfully`);
+    logger.info(`Order with id ${id} deleted successfully`);
 }
 }
