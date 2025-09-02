@@ -33,4 +33,3 @@ export class XMLToyMapper implements IMapper<{ [key: string]: string }, Toy> {
         };
 }
 }
-

@@ -88,7 +88,7 @@ async function main22(){
         .setPrice(24.99)
         .setQuantity(1)
         .build();
-    const s =  await Repository.delete("5001");
+    const s =  await Repository.create(order);
 
     console.log(s);
 
