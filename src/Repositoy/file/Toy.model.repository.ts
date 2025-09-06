@@ -27,11 +27,21 @@ export class ToyRepository extends OrderRepository{
 async save(orders: Order[]): Promise<void> {
 
     const rows = orders.map(o => new XMLOrderMapper(new XMLToyMapper() ).reverseMap(o));
-    const xmlData = {
-        data: {
-            row: rows
-        }
-    };
+const xmlData = {
+    data: {
+        row: rows.map(r => ({
+            "@_OrderID": r.OrderID,
+            "@_Type": r.Type,
+            "@_AgeGroup": r.AgeGroup,
+            "@_Brand": r.Brand,
+            "@_Material": r.Material,
+            "@_BatteryRequired": r.BatteryRequired,
+            "@_Educational": r.Educational,
+            "@_Quantity": r.Quantity,
+            "@_Price": r.Price
+        }))
+    }
+};
     await writeXmlFile(this.filePath, xmlData);
 
      

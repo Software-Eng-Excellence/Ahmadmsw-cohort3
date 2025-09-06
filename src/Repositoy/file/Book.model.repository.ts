@@ -24,6 +24,6 @@ async save(orders: Order[]): Promise<void> {
     const rows = orders.map(o => new JSONOrderMapper(new JSONBookMapper() ).reverseMap(o));
         await writeJsonFile(this.filePath, rows);
 
-     
+
 }
 }

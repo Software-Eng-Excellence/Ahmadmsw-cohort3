@@ -1,8 +1,8 @@
 import { Item, ItemCategoty } from "../models/item.model"
 export class book implements Item {
-       private orderId: string;
-     private title: string;
-      private author: string;
+    private orderId: string;
+    private title: string;
+    private author: string;
     private genre: string;
     private format: string;
     private language: string;
