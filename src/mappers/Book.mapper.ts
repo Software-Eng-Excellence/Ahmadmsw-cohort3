@@ -7,7 +7,7 @@ export class JSONBookMapper implements IMapper<{[key: string]: string}, book> {
     
     map(data: {[key: string]: string}): book {
         return new BookBuilder()
-            .setOrderId(data["Order ID"]??"")
+            
             .setTitle(data["Book Title"]??"")
             .setAuthor(data["Author"]??"")
             .setGenre(data["Genre"]??"")

@@ -1,10 +1,11 @@
 import { Order } from "../../models/order.model";
+
 import { ID,IRepository } from "../IRepository";
 import logger from "../../util/logger";
 import {InvalidItemException,ItemNotFoundException} from "../../util/Exceptions/RepositoryExceptions"
 
 //abstact class i use it in the concrete classes and use load nad save methods with what and how i need to save and load
-export abstract class OrderRepository implements IRepository<Order >{
+export abstract class OrderRepository implements IRepository<Order>{
 
     abstract save(item: Order[]): Promise<void> 
 

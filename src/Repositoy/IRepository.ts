@@ -1,6 +1,6 @@
 export interface ID {
     getId():string; }
-
+import { Order } from "../models/order.model";
 /**
  * Generic repository interface for CRUD operations.
  *
@@ -34,11 +34,17 @@ export interface ID {
  * @param {ID} id - The unique identifier of the entity to delete.
  * @returns {Promise<void>} A promise that resolves when the deletion is complete.
  * @throws May throw if deletion fails.
+ * @throws database exception if any database error occurs
  */
-export interface IRepository<T> {
+export interface IRepository<T extends ID> {
     getAll(): Promise<T[]>;
     getById(id: string): Promise<T>;
     create(item: T): Promise<string>;
     update(item: T): Promise<void>;
     delete(id: string): Promise<void>;
 }
+
+export interface Initialzable {
+    init(): Promise<void>;
+}
+export interface InitialzableRepository<T extends ID> extends IRepository<T>,Initialzable{}
