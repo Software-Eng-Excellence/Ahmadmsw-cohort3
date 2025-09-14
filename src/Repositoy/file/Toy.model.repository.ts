@@ -8,6 +8,7 @@ import { JSONBookMapper } from "../../mappers/Book.mapper";
 
 import { XMLToyMapper } from "../../mappers/Toy.mapper";
 import {XMLOrderMapper}from "../../mappers/CSVorder.mapper"
+import { DatabaseException } from "../../util/Exceptions/RepositoryExceptions";
 
 export class ToyRepository extends OrderRepository{
 
@@ -15,17 +16,22 @@ export class ToyRepository extends OrderRepository{
             super()
         }
  async load(): Promise<Order[]> {
-   let ff =   await readXmlFile<{ data: { row: { [key: string]: string }[] } }>(this.filePath); 
-    const rows = ff.data.row ;
+    try {
+   let data =   await readXmlFile<{ data: { row: { [key: string]: string }[] } }>(this.filePath); 
+    const rows = data.data.row ;
 
    const mapper = new XMLOrderMapper(new XMLToyMapper());
 
    const orders = rows.map(r => mapper.map(r));
 
    return orders;
+    }
+    catch (error) {
+        throw new DatabaseException(`Failed to load data from XML file: ${error}`);
+    }
 }
 async save(orders: Order[]): Promise<void> {
-
+try {
     const rows = orders.map(o => new XMLOrderMapper(new XMLToyMapper() ).reverseMap(o));
 const xmlData = {
     data: {
@@ -43,7 +49,10 @@ const xmlData = {
     }
 };
     await writeXmlFile(this.filePath, xmlData);
+}catch (error) {
+    throw new DatabaseException(`Failed to save data to XML file: ${error}`);   
 
      
+}
 }
 }

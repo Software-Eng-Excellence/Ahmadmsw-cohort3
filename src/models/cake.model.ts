@@ -1,6 +1,11 @@
-import { Item, ItemCategoty } from "../models/item.model"
+import { Item, ItemCategoty ,ItemWithId} from "../models/item.model"
 
-export class cake implements Item {
+
+
+
+
+
+export class Cake implements Item {
 
     private type: string;
     private flavor: string;
@@ -118,4 +123,51 @@ getPackagingType(): string {
 }
 
 
+}
+export class IdentifiableCake extends Cake implements ItemWithId {
+    private id: string;
+
+    constructor(
+        id: string, 
+        
+        type: string,
+        flavor: string,
+        filling: string,
+        size: number,
+        layers: number,
+        frostingType: string,
+        frostingFlavor: string,
+        decorationType: string,
+        decorationColor: string,
+        customMessage: string,
+        shape: string,
+        allergies: string,
+        specialIngredients: string,
+        packagingType: string
+    ) {
+        super(
+            type,
+            flavor,
+            filling,
+            size,
+            layers,
+            frostingType,
+            frostingFlavor,
+            decorationType,
+            decorationColor,
+            customMessage,
+            shape,
+            allergies,
+            specialIngredients,
+            packagingType
+        );
+        this.id = id;
+    }
+
+
+    getId(): string {
+        return this.id;
+    }
+
+    
 }

@@ -1,5 +1,5 @@
-import { Item } from "../models/item.model";
-import { IOrder } from "./Iorder.model";
+import { Item ,ItemWithId} from "../models/item.model";
+import { IOrder,IdentifiableOrderItem } from "./Iorder.model";
 
 
 
@@ -13,7 +13,7 @@ export class Order implements IOrder {
         return this.item;
     }
     getPrice(): number {
-        return this.price;
+    return this.price;
         
     }
     getQuantity(): number {
@@ -23,3 +23,25 @@ export class Order implements IOrder {
         return this.id;
     }   
 }
+
+
+export class IdentifiableOrder  implements IdentifiableOrderItem  {
+    constructor(private iditem :ItemWithId ,private price :number , private quantity:number, private id:string) {
+        
+    }
+    getItem(): ItemWithId {
+        return this.iditem;
+    }
+    getPrice(): number {
+        return this.price
+    }
+    getQuantity(): number {
+        return this.quantity
+    }
+    getId(): string {
+        return this.id;
+    }
+    }
+
+
+

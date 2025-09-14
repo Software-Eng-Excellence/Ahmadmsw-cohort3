@@ -1,3 +1,5 @@
+
+import { ID } from "../Repositoy/IRepository";  
 export enum ItemCategoty {
     CAKE = "cake",
     BOOK = 'book',
@@ -5,6 +7,11 @@ export enum ItemCategoty {
     
 }
 
-export interface Item {
+export interface Item  {
     getCategory() : ItemCategoty ;
+    
+}
+
+export interface ItemWithId extends Item, ID {
+   
 }

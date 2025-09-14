@@ -1,4 +1,5 @@
-import { cake } from "../cake.model";
+import { Cake} from "../cake.model";
+import { IdentifiableCake } from "../cake.model";
 import logger from "../../util/logger";
 
 
@@ -97,9 +98,9 @@ setType(type: string): CakeBuilder {
 
 
 
-  build():cake { // must return an object of the class cake i can use getters
+  build():Cake { // must return an object of the class cake i can use getters
     
-    return new cake( 
+    return new Cake( 
     this.type,
     this.flavor,
     this.filling,
@@ -119,3 +120,42 @@ setType(type: string): CakeBuilder {
   }
 
 } 
+export class IdentifiableCakeBuilder {
+  private id : string ="";
+  private cake! : Cake ;
+
+  setId(id: string): IdentifiableCakeBuilder {
+    this.id = id;
+    return this;
+  }
+
+  setCake(cake: Cake): IdentifiableCakeBuilder {
+    this.cake = cake;
+    return this;
+  }
+  build(): IdentifiableCake {
+     return new IdentifiableCake(
+      this.id,
+      
+      this.cake.getType(),
+      this.cake.getFlavor(),
+      this.cake.getFilling(),
+      this.cake.getSize(),
+      this.cake.getLayers(),
+      this.cake.getFrostingType(),
+      this.cake.getFrostingFlavor(),
+      this.cake.getDecorationType(),
+      this.cake.getDecorationColor(),
+      this.cake.getCustomMessage(),
+      this.cake.getShape(),
+      this.cake.getAllergies(),
+      this.cake.getSpecialIngredients(),
+      this.cake.getPackagingType(),
+      );
+     }
+
+
+    }
+      
+  
+

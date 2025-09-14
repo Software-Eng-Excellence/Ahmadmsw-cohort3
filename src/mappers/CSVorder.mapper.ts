@@ -1,8 +1,10 @@
 import {IMapper} from "./Imapper"
 import {Order} from "../models/order.model"
-import {IOrder} from "../models/Iorder.model"
-import { OrderBuilder } from "../models/builder/order.builder"
-import { Item } from "../models/item.model";
+import {IOrder,IdentifiableOrderItem} from "../models/Iorder.model"
+import { OrderBuilder ,IdentifiableOrderBuilder } from "../models/builder/order.builder"
+import { Item ,ItemWithId } from "../models/item.model";
+import {SQLiteCake} from "./Cake.mapper"
+import { Cake } from "models/cake.model";
 
 
 export class  CSVOrderMapper implements IMapper <string[],Order>{
@@ -31,11 +33,45 @@ export class  CSVOrderMapper implements IMapper <string[],Order>{
         ];
     }
 }
+export interface ISQLITEOrder {
+    
+    id:string,
+    quantity:number,
+    price:number,
+    item_category: string,
+    item_id:string,
+    
+}
+export class SQLiteOrderMapper implements IMapper<{data:ISQLITEOrder, item: ItemWithId}, IdentifiableOrderItem> {
+    
+    map({data, item}: {data:ISQLITEOrder, item: ItemWithId}): IdentifiableOrderItem {
+     
+    
+
+        const idOrder = new IdentifiableOrderBuilder()
+        return idOrder.setPrice(data.price).setQuantity(data.quantity).setId(data.id).setItem(item).build();
+    }
+    reverseMap(data: IdentifiableOrderItem): {data:ISQLITEOrder, item: ItemWithId} {
+        return {
+            data: {
+                id: data.getId(),
+                price: data.getPrice(),
+                quantity: data.getQuantity(),
+                item_category: data.getItem().getCategory(),
+                item_id: data.getItem().getId()
+            },
+            item: data.getItem()
+        }
+    }
+
+}
+
+
 export class JSONOrderMapper implements IMapper<{ [key: string]: string }, Order> {
     constructor(private itemMapper: IMapper<{ [key: string]: string }, Item>) {}
 
     map(data: { [key: string]: string }): Order {
-                const orderBuild = new OrderBuilder();
+        const orderBuild = new OrderBuilder();
         const item: Item = this.itemMapper.map(data);
         return orderBuild
         .setId((data["Order ID"]) )

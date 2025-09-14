@@ -45,8 +45,9 @@ export abstract class OrderRepository implements IRepository<Order>{
         //save data
         await this.save(orders);
         //return id
+         logger.info(`Order with id ${id} created successfully`);
         return String(item.getId()); // return the id of the created order
-        logger.info(`Order with id ${id} created successfully`);
+       
     }
 
 

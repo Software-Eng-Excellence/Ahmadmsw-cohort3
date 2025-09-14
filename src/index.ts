@@ -1,44 +1,77 @@
 import logger from "./util/logger"
 
 
-import { BookRepository } from "./Repositoy/file/Book.model.repository";
-import { ToyRepository } from "./Repositoy/file/Toy.model.repository";
-import { OrderRepository } from "./Repositoy/file/order.repository";
+import {CakeRepository} from "./Repositoy/sqlite/cake.repository"
+import { CakeBuilder,IdentifiableCakeBuilder } from "./models/builder/cake.builder";
+import {IdentifiableOrderBuilder, OrderBuilder} from "./models/builder/order.builder"
 
-import config from "./config";
+import { OrderRepository } from "./Repositoy/sqlite/order.repository";
 
-import {open} from "sqlite";
-import { Database } from "sqlite3";
 
-async function main3() {
-    const db = await open({
-        filename: "src/data/orders.db",
-        driver: Database
-    });
-    await db.exec(`
-    CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        orderId TEXT,
-        itemCategory TEXT,
-        itemDetails TEXT,
-        quantity INTEGER,
-        price REAL
-    )
-    `);
-    const orders = [
-        { orderId: "1", itemCategory: "Book", itemDetails: "The Great Gatsby by F. Scott Fitzgerald, Fiction, Hardcover, English, Scribner, First Edition, Standard", quantity: 2, price: 20.00 },
-        { orderId: "2", itemCategory: "Toy", itemDetails: "Action Figure, 5-10, Hasbro, Plastic, Yes, Yes", quantity: 1, price: 15.50 },
-        { orderId: "3", itemCategory: "Book", itemDetails: "1984 by George Orwell, Dystopian, Paperback, English, Houghton Mifflin Harcourt, Second Edition, Standard", quantity: 3, price: 12.00 }
-    ];
-    for (const order of orders) {
-        await db.run(
-            `INSERT INTO orders (orderId, itemCategory, itemDetails, quantity, price) VALUES (?, ?, ?, ?, ?)`,
-            [order.orderId, order.itemCategory, order.itemDetails, order.quantity, order.price]
-        );
-    }
-    const allorders = await db.all(`SELECT * FROM orders`);
-    console.log(allorders);
-    await db.close();
+
+
+
+async function DBSandBox() {
+    //create table if not exist
+    const dbOrder = new OrderRepository(new CakeRepository());
+    // await dbOrder.init();
+    // create  cake : 
+    const cakeBuild = new CakeBuilder();
+    const cake = cakeBuild
+    
+  .setType("Birthday")
+  .setFlavor("Chocolate")
+  .setFilling("Vanilla Cream")
+  .setSize(12) 
+  .setLayers(3)
+  .setFrostingType("Buttercream")
+  .setFrostingFlavor("Strawberry")
+  .setDecorationType("Flowers")
+  .setDecorationColor("Red")
+  .setCustomMessage("Happy Birthday Ahmad!")
+  .setShape("Round")
+  .setAllergies("Nuts")
+  .setSpecialIngredients("Honey")
+  .setPackagingType("Box")
+  .build();
+
+  //create identifiable cake :
+  const idcakeBuild = new IdentifiableCakeBuilder();
+
+  const  idcake = idcakeBuild.setCake(cake)
+                             .setId("2")
+                             .build()
+                           
+  //create identifiable order :                            
+
+
+
+
+const idorderBuilder = new IdentifiableOrderBuilder()
+const idorder = idorderBuilder.setItem(idcake).setPrice(14).setItem(idcake).setQuantity(14).setId("20").build();
+
+ const l = await dbOrder.create(idorder);
+  logger.info(l);
 
 }
-main3();
+      //  DBSandBox()
+
+async function as(){
+    const dbcake = new CakeRepository();
+    const dbOrder = new OrderRepository(new CakeRepository());
+    
+
+    const s = await dbOrder.getById("20");
+    
+    logger.info("%o",s);
+
+}
+    // as();
+
+    async function get(){
+       const dbOrder = new OrderRepository(new CakeRepository());
+        const dbcake = new CakeRepository();
+       const s = await dbOrder.getAll();
+       logger.info("%o",s.length);
+    }
+    get();

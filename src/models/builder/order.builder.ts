@@ -1,5 +1,5 @@
-import { Item } from "../item.model";
-import { Order } from "../order.model";
+import { Item ,ItemWithId} from "../item.model";
+import { Order ,IdentifiableOrder} from "../order.model";
 
 export class OrderBuilder {
   private item!: Item;
@@ -32,5 +32,38 @@ export class OrderBuilder {
 
   build(): Order {
     return new Order(this.item, this.price, this.quantity,this.id);
+  }
+}
+
+
+export class IdentifiableOrderBuilder {
+  private item! : ItemWithId ;
+  private price!:number ;
+  private quantity!:number;
+  private id!:string;
+
+  setItem(item:ItemWithId):IdentifiableOrderBuilder{
+    this.item = item ;
+    return this
+  }
+  setPrice(price: number): IdentifiableOrderBuilder {
+    this.price = price;
+    return this;
+  
+  }
+
+  setQuantity(quantity: number): IdentifiableOrderBuilder {
+    this.quantity = quantity;
+    return this;
+    
+  }
+  setId(id: string): IdentifiableOrderBuilder {
+    this.id = id;
+    return this;
+    
+  }
+
+  build():IdentifiableOrder  {
+    return new IdentifiableOrder(this.item,this.price,this.quantity,this.id);
   }
 }
