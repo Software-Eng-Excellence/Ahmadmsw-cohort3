@@ -1,4 +1,4 @@
-import { Toy } from "../toy.model";
+import { Toy,IdentifiableToy } from "../toy.model";
 
 export class ToyBuilder {
     private orderID: string="";
@@ -57,6 +57,31 @@ export class ToyBuilder {
             this.batteryRequired,
             this.educational
  
+        );
+    }
+}
+
+export class IdentifiableToyBuilder extends ToyBuilder {
+    private id: string="";
+    private toy !: Toy;
+    setId(id: string): IdentifiableToyBuilder {
+        this.id = id;
+        return this;
+    }
+    setToy(toy: Toy): IdentifiableToyBuilder {
+        this.toy = toy;
+        return this;
+    }
+
+    build(): IdentifiableToy {
+        return new IdentifiableToy(
+            this.id,
+            this.toy.getType(),
+            this.toy.getAgeGroup(),
+            this.toy.getBrand(),
+            this.toy.getMaterial(),
+            this.toy.getBatteryRequired(),
+            this.toy.getEducational()
         );
     }
 }

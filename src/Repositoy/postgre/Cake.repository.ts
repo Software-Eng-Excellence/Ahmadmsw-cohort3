@@ -5,7 +5,7 @@ import logger from "../../util/logger";
 import { Initialzable } from "../IRepository";
 import { InitialzableRepository } from "../IRepository";
 import {IdentifiableCake} from "../../models/cake.model"
-import {ConnectionManager} from "./ConnectionManager.repository"
+import {ConnectionManager} from "./connectionManager.repository"
 import {ItemWithId} from "../../models/item.model"
 import {DatabaseException, ItemNotFoundException} from "../../util/Exceptions/RepositoryExceptions"
 import {ItemCategoty } from "../../models/item.model"
@@ -30,33 +30,16 @@ const CREATE_TABLE = `
             specialIngredients TEXT NOT NULL,
             packagingType TEXT NOT NULL
         )`
-const INSERT_CAKE = `
-    INSERT INTO ${table_name} (
-        id,
-        type,
-        flavor,
-        filling,
-        size,
-        layers,
-        frostingType,
-        frostingFlavor,
-        decorationType,
-        decorationColor,
-        customMessage,
-        shape,
-        allergies,
-        specialIngredients,
-        packagingType
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`;
-const SELECT_BY_ID = `SELECT * FROM ${table_name} WHERE id = ?`;
+const INSERT_CAKE = `insert into ${table_name} (
+        id, type, flavor, filling, size, layers, frostingType, frostingFlavor, decorationType, decorationColor, customMessage, shape, allergies, specialIngredients, packagingType
+    ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`;
+   const SELECT_BY_ID = `SELECT * FROM ${table_name} WHERE id = $1`
 
 const SELECT_ALL = `SELECT * FROM ${table_name}`
 
-    const DELETE_ID = `DELETE  FROM ${table_name} WHERE id = ?`
+    const DELETE_ID = `DELETE  FROM ${table_name} WHERE id = $1`
 
-const UPDATE_CAKE = `update ${table_name} set type = ?, flavor = ?, filling = ?, size = ?, layers = ?, frostingType = ?, frostingFlavor = ?, decorationType = ?, decorationColor = ?, customMessage = ?, shape = ?, allergies = ?, specialIngredients = ?, packagingType = ? where id = ?`;
-
+const UPDATE_CAKE = `update ${table_name} set type = $1, flavor = $2, filling = $3, size = $4, layers = $5, frostingType = $6, frostingFlavor = $7, decorationType = $8, decorationColor = $9, customMessage = $10, shape = $11, allergies = $12, specialIngredients = $13, packagingType = $14 where id = $15`;
 
 
 
@@ -68,7 +51,7 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
        async init(): Promise<void> {
         try {
             const conn = await ConnectionManager.getConnection();
-            await conn.exec(CREATE_TABLE);
+            await conn.query(CREATE_TABLE);
             logger.info('Database initialized and table created if not exists cake');
         }catch (error) {
             logger.error(`Database initialization failed: ${error}`);
@@ -79,14 +62,15 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
     async getAll(): Promise<IdentifiableCake[]> {
         try {
         const conn = await ConnectionManager.getConnection();
-        const result = await conn.all<SQLiteCake[]>(SELECT_ALL);
+        const result = await conn.query(SELECT_ALL);
+        
         if(!result){
             throw new DatabaseException("no Cakes")
         }
-     
+        const rows : SQLiteCake[] = result.rows;
         const mapper = new SQLITECakeMapper()  ;
-        
-        return result.map((item)=> mapper.map(item))
+
+        return rows.map((item)=> mapper.map(item))
         }catch(error : unknown)
         {
             logger.error("Fail to get Cake of id : %s error : %o ",error as Error);
@@ -96,11 +80,12 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
     async getById(id: string): Promise<IdentifiableCake> {
         try {
         const conn = await ConnectionManager.getConnection();
-        const x = await conn.get<SQLiteCake>(SELECT_BY_ID,id);
+        const x = await conn.query(SELECT_BY_ID,[id]);
         if(!x){
             throw new ItemNotFoundException("cake not found of id "+ id);
         }
-        const result = new SQLITECakeMapper().map(x)  ;
+        const row : SQLiteCake = x.rows[0];
+        const result = new SQLITECakeMapper().map(row);
         return result
         }catch(error : unknown)
         {
@@ -112,7 +97,7 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
         try {
                     const conn = await ConnectionManager.getConnection()
         
-            await conn.run(
+            await conn.query(
             INSERT_CAKE,
             [
                 item.getId(),
@@ -133,8 +118,8 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
             ],
     
             );
-             
-       logger.info("succes From Cake")
+
+       logger.info("success Create From Cake")
         return item.getId();
             
         } catch (error) {
@@ -146,7 +131,7 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
     async update(item: IdentifiableCake): Promise<void> {
         try {
         const conn = await ConnectionManager.getConnection();
-             await conn.run(UPDATE_CAKE, [
+             await conn.query(UPDATE_CAKE, [
                 item.getType(),
                 item.getFlavor(),
                 item.getFilling(),
@@ -177,7 +162,7 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
     async delete(id: string): Promise<void> {
               try {
         const conn = await ConnectionManager.getConnection();
-         await conn.run(DELETE_ID,id);
+         await conn.query(DELETE_ID,[id]);
         logger.info("Cake Deleted")
        
        

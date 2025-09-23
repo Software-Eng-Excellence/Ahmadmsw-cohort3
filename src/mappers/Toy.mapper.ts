@@ -1,6 +1,6 @@
 import { IMapper } from "./Imapper";
-import {Toy} from "../models/toy.model"
-import { ToyBuilder } from "../models/builder/toy.builder";
+import {Toy,IdentifiableToy} from "../models/toy.model"
+import { ToyBuilder ,IdentifiableToyBuilder } from "../models/builder/toy.builder";
 
 
 
@@ -30,6 +30,46 @@ export class XMLToyMapper implements IMapper<{ [key: string]: string }, Toy> {
             "Material": data.getMaterial(),
             "BatteryRequired": data.getBatteryRequired(),
             "Educational": data.getEducational()
+        };
+}
+}
+
+export interface ISQLITEToy {
+    id: string,
+    type: string,
+    age_group: string,
+    brand: string,
+    material: string,
+    battery_required: string,
+    educational: string
+}
+export class SQLITEToyMapper implements IMapper<ISQLITEToy, IdentifiableToy> {
+    map(data: ISQLITEToy): IdentifiableToy {
+        const build = new IdentifiableToyBuilder();
+        const toyBuild = new ToyBuilder();
+        return build
+        
+            .setId(data.id)
+            .setToy(
+                toyBuild
+                .setType(data.type)
+                .setAgeGroup(data.age_group)
+                .setBrand(data.brand)
+                .setMaterial(data.material)
+                .setBatteryRequired(data.battery_required)
+                .setEducational(data.educational)
+                .build())
+            .build();
+    }
+    reverseMap(data: IdentifiableToy): ISQLITEToy {
+        return {
+            id: data.getId(),
+            type: data.getType(),
+            age_group: data.getAgeGroup(),
+            brand: data.getBrand(),
+            material: data.getMaterial(),
+            battery_required: data.getBatteryRequired(),
+            educational: data.getEducational()
         };
 }
 }

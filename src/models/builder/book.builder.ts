@@ -1,8 +1,8 @@
-import { book } from "../book.model";
+import { book , IdentifiableBook } from "../book.model";
 import logger from "../../util/logger";
 
 export class BookBuilder {
-private orderId: string = "";
+
 private title: string = "";
 private author: string = "";
 private genre: string = "";
@@ -14,10 +14,7 @@ private packaging: string = "";
 
 
 
-  setOrderId(orderId: string): BookBuilder {
-    this.orderId = orderId;
-    return this;
-  }
+
 
   setTitle(title: string): BookBuilder {
     this.title = title;
@@ -65,7 +62,7 @@ private packaging: string = "";
 
 
     return new book(
-      this.orderId,
+
       this.title,
       this.author,
       this.genre,
@@ -76,5 +73,24 @@ private packaging: string = "";
       this.packaging,
 
     );
+  }
+}
+
+export class IdentifiableBookBuilder {
+  private id: string = "";
+  private book!: book;
+
+  setId(id: string): IdentifiableBookBuilder {
+    this.id = id;
+    return this;
+  }
+
+  setBook(book: book): IdentifiableBookBuilder {
+    this.book = book;
+    return this;
+  }
+
+  build(): IdentifiableBook {
+    return new IdentifiableBook(this.id, this.book.getTitle(), this.book.getAuthor(), this.book.getGenre(), this.book.getFormat(), this.book.getLanguage(), this.book.getPublisher(), this.book.getSpecialEdition(), this.book.getPackaging());
   }
 }

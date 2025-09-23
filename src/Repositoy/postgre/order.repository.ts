@@ -1,18 +1,18 @@
 import {IRepository} from "../IRepository"
 import {Order} from "../../models/order.model"
-import {Database} from 'sqlite3';
-import { open } from 'sqlite';
-import config from "../../config/index";
+
 import logger from "../../util/logger";
 import { Initialzable } from "../IRepository";
 import { InitialzableRepository } from "../IRepository";
 import { DatabaseException, ItemNotFoundException }from "../../util/Exceptions/RepositoryExceptions"
-import { ConnectionManager } from "./ConnectionManager.repository";
+import { ConnectionManager } from "./connectionManager.repository";
 import {Item,ItemWithId} from "../../models/item.model"
-import {ID} from "../IRepository"
+
 import {IdentifiableOrderItem, IOrder} from "../../models/Iorder.model"
 import {SQLiteOrderMapper,ISQLITEOrder}from "../../mappers/CSVorder.mapper"
 import {SQLITECakeMapper}from "../../mappers/Cake.mapper"
+import { table } from "console";
+
 
     const CREATE_TABLE = `
             CREATE TABLE IF NOT EXISTS "order" (
@@ -22,19 +22,21 @@ import {SQLITECakeMapper}from "../../mappers/Cake.mapper"
                 Item_Categoty TEXT NOT NULL,
                 item_id TEXT NOT NULL
             )`
-    const CREATE_ITEM_TABLE = `INSERT INTO "order" (id, quantity, price, Item_Categoty, item_id) VALUES (?, ?, ?, ?, ?)`
+  const CREATE_ITEM_TABLE = `insert into "order" (
+    id, quantity, price, Item_Categoty, item_id
+) values ($1, $2, $3, $4, $5)`;
 
-    const SELECT_ALL = `SELECT * FROM "order" WHERE Item_Categoty = ?`
+    const SELECT_ALL = `SELECT * FROM "order" WHERE Item_Categoty = $1`
 
-    const SELECT_BY_ID = `SELECT * FROM "order" WHERE id = ?`;
-    const DELETE_BY_ID = `DELETE  FROM "order" WHERE id = ?`;
+    const SELECT_BY_ID = `SELECT * FROM "order" WHERE id = $1`
+    const DELETE_BY_ID = `DELETE  FROM "order" WHERE id = $1`;
     const UPDATE_BY_ID = `
              UPDATE "order"
-            SET quantity = ?,
-            price = ?,
-            Item_Categoty = ?,
-            item_id = ?
-            WHERE id = ?`;
+            SET quantity = $1,
+            price = $2,
+            Item_Categoty = $3,
+            item_id = $4
+            WHERE id = $5`;
 
 
 export class OrderRepository implements InitialzableRepository<IdentifiableOrderItem> {
@@ -51,7 +53,7 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
             try {
                 const conn = await ConnectionManager.getConnection();
 
-                await  conn.exec(CREATE_TABLE);
+                await  conn.query(CREATE_TABLE);
                 await this.itemRepository.init();
                 logger.info("create table");
 
@@ -74,9 +76,10 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
             if(items.length ==0){
                 throw new ItemNotFoundException("No items At All")
             }
-            const orders = await conn.all<ISQLITEOrder[]>(SELECT_ALL,items[0].getCategory());
+            const orders = await conn.query(SELECT_ALL,[items[0].getCategory()]);
             //bind ORDERS TO ITEMS :
-            const bindOrders = orders.map((order) =>{
+            const Porders : ISQLITEOrder[] = orders.rows;
+            const bindOrders = Porders.map((order) =>{
                 const item = items.find((item)=>item.getId() === order.item_id )
                 if(!item){
                     throw new DatabaseException("Item Not found with respect to order getAll")
@@ -91,7 +94,7 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
             return identifiableOrders ;
             
         } catch (error) {
-            throw new DatabaseException("Error get ALL")
+            throw new DatabaseException("Error get Orders ALL" + error);
         }
 
        
@@ -105,19 +108,17 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
         try {
         const conn = await ConnectionManager.getConnection();
         
-        const x = await conn.get<ISQLITEOrder>  (SELECT_BY_ID,id);
-        
-               
-        
-        
+        const x = await conn.query(SELECT_BY_ID,[id]);
+
        
         if(!x){
 
             throw new ItemNotFoundException("Order not found of id "+id)
         }
         else {
-        const cake = await this.itemRepository.getById(x.item_id)
-        const result = new SQLiteOrderMapper().map({data:x , item:cake});
+        const row : ISQLITEOrder = x.rows[0];     
+        const cake = await this.itemRepository.getById(row.item_id)
+        const result = new SQLiteOrderMapper().map({data:row , item:cake});
         
         return result
         
@@ -138,12 +139,12 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
         try {
             
             conn = await ConnectionManager.getConnection();
-            conn.exec("BEGIN TRANSACTION");
+            await conn.query("BEGIN TRANSACTION");
             const item_id  = await this.itemRepository.create(order.getItem()); // that for the spesific item like cake for example
             //here we use D from SOLID
-             await conn.run(CREATE_ITEM_TABLE, [order.getId(), order.getQuantity(), order.getPrice(), order.getItem().getCategory(), item_id]);
-            
-            conn.exec("COMMIT");
+            await conn.query(CREATE_ITEM_TABLE, [order.getId(), order.getQuantity(), order.getPrice(), order.getItem().getCategory(), item_id]);
+
+            await conn.query("COMMIT");
             
             return order.getId();
             
@@ -151,7 +152,7 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
         catch (error:unknown) {
 
             logger.error(`Order Creating : Creating order failed: ${error}`);
-            conn && conn.exec("ROLLBACK")
+            conn && await conn.query("ROLLBACK");
             throw new DatabaseException('Creating order failed');
         }
         //transcation
@@ -168,9 +169,9 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
              try {
         const conn = await ConnectionManager.getConnection();
         
-        conn.exec("BEGIN TRANSACTION");
+        await conn.query("BEGIN TRANSACTION");
         await this.itemRepository.update(order.getItem())
-await conn.run(UPDATE_BY_ID, [
+await conn.query(UPDATE_BY_ID, [
   order.getQuantity(),
   order.getPrice(),
   order.getItem().getCategory(),
@@ -178,9 +179,8 @@ await conn.run(UPDATE_BY_ID, [
   order.getId()
 ]);
 
-        conn.exec("COMMIT");
-        
- 
+        await conn.query("COMMIT");
+
         }catch(error : unknown)
         {
             logger.error("Fail to UPDATE Order of id : %s error : %o ", order.getId(),error as Error);
@@ -192,12 +192,11 @@ await conn.run(UPDATE_BY_ID, [
              try {
         const conn = await ConnectionManager.getConnection();
         const order = await this.getById(id);
-        conn.exec("BEGIN TRANSACTION");
+        await conn.query("BEGIN TRANSACTION");
         await this.itemRepository.delete(order.getItem().getId())
-         await conn.run(DELETE_BY_ID,id);
-        conn.exec("COMMIT");
-        
- 
+         await conn.query(DELETE_BY_ID,[id]);
+        await conn.query("COMMIT");
+
         }catch(error : unknown)
         {
             logger.error("Fail to DELTE Order of id : %s error : %o ", id,error as Error);

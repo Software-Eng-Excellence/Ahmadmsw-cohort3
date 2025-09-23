@@ -1,4 +1,4 @@
-import { Item, ItemCategoty } from "../models/item.model";
+import { Item, ItemCategoty,ItemWithId } from "../models/item.model";
 
 export class Toy implements Item {
 
@@ -61,4 +61,31 @@ export class Toy implements Item {
     }
  
 
+}
+export class IdentifiableToy extends Toy implements ItemWithId {
+    private id: string;
+
+    constructor(
+        id: string,
+        type: string,
+        ageGroup: string,
+        brand: string,
+        material: string,
+        batteryRequired: string,
+        educational: string
+    ) {
+        super(
+            type,
+            ageGroup,
+            brand,
+            material,
+            batteryRequired,
+            educational
+        );
+        this.id = id;
+    }
+
+    getId(): string {
+        return this.id;
+    }
 }

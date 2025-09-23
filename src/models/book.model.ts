@@ -1,6 +1,7 @@
-import { Item, ItemCategoty } from "../models/item.model"
+import { Item, ItemCategoty, ItemWithId} from "../models/item.model"
+
 export class book implements Item {
-    private orderId: string;
+
     private title: string;
     private author: string;
     private genre: string;
@@ -12,7 +13,7 @@ export class book implements Item {
 
 
       constructor(
-        orderId: string,
+
         title: string,
         author: string,
         genre: string,
@@ -23,7 +24,7 @@ export class book implements Item {
         packaging: string,
 
     ) {
-        this.orderId = orderId;
+
         this.title = title;
         this.author = author;
         this.genre = genre;
@@ -35,9 +36,7 @@ export class book implements Item {
 
 
     }
-    getOrderId(): string {
-        return this.orderId;
-    }
+
        getCategory(): ItemCategoty {
         return ItemCategoty.BOOK; 
     }
@@ -77,4 +76,38 @@ export class book implements Item {
 
 
     
+}
+
+export class IdentifiableBook extends book implements ItemWithId {
+    private id: string;
+
+    constructor(
+        id: string,
+  
+        title: string,
+        author: string,
+        genre: string,
+        format: string,
+        language: string,
+        publisher: string,
+        specialEdition: string,
+        packaging: string
+    ) {
+        super(
+          
+            title,
+            author,
+            genre,
+            format,
+            language,
+            publisher,
+            specialEdition,
+            packaging
+        );
+        this.id = id;
+    }
+    
+getId(): string {
+        return this.id;
+    }
 }
