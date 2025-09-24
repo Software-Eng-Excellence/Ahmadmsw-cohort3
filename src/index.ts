@@ -12,14 +12,18 @@ import { ToyRepository } from "./Repositoy/postgre/Toy.Repository";
 import { OrderRepository } from "./Repositoy/postgre/order.repository";
 import { Toy } from "models/toy.model";
 
+import {RepositoryFactory} from "./Repositoy/Repository.Factory"
+import { DBType } from "./models/DBtypes.model";
+import { ItemCategoty } from "./models/item.model";
+
 
 
 
 
 async function DBSandBox() {
     //create table if not exist
-    const dbOrder = new OrderRepository(new ToyRepository());
-    await dbOrder.init();
+    const repository = await RepositoryFactory.create(DBType.POSTGRESQL, ItemCategoty.TOY);
+  
     // create  toy : 
     const idtoyBuild = new IdentifiableToyBuilder();
     const toyBuild = new ToyBuilder();
@@ -34,7 +38,7 @@ async function DBSandBox() {
       .build();
 
 
-     const bb = idtoyBuild.setToy(toy).setId("33").build();
+     const bb = idtoyBuild.setToy(toy).setId("313").build();
 
                             
 
@@ -42,13 +46,13 @@ async function DBSandBox() {
 
 
 const idorderBuilder = new IdentifiableOrderBuilder()
-const idorder = idorderBuilder.setItem(bb).setPrice(14).setItem(bb).setQuantity(14).setId("55").build();
+const idorder = idorderBuilder.setItem(bb).setPrice(14).setItem(bb).setQuantity(14).setId("212").build();
 
- const l = await dbOrder.create(idorder);
+ const l = await repository.create(idorder);
   logger.info(l);
 
 }
-          // DBSandBox()
+           DBSandBox()
 
 async function as(){
     const dbcake = new CakeRepository();
@@ -68,7 +72,7 @@ async function as(){
        const s = await dbOrder.getAll();
        logger.info("%o",s);
     }
-    get();
+    // get();
 
     async function dd(){
         const dbOrder = new OrderRepository(new BookRepository());
