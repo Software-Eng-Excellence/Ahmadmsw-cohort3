@@ -1,119 +1,54 @@
+import express from "express"
+import config from "./config"
 import logger from "./util/logger"
-
-
-import {CakeRepository} from "./Repositoy/postgre/Cake.repository"
-import { CakeBuilder,IdentifiableCakeBuilder } from "./models/builder/cake.builder";
-import {IdentifiableOrderBuilder, OrderBuilder} from "./models/builder/order.builder"
-import { BookRepository } from "./Repositoy/postgre/Book.repository";
-import {BookBuilder,IdentifiableBookBuilder} from "./models/builder/book.builder"
-import { IdentifiableToyBuilder,ToyBuilder } from "./models/builder/toy.builder";
-import { ToyRepository } from "./Repositoy/postgre/Toy.Repository";
-
-import { OrderRepository } from "./Repositoy/postgre/order.repository";
-import { Toy } from "models/toy.model";
-
-import {RepositoryFactory} from "./Repositoy/Repository.Factory"
-import { DBType } from "./models/DBtypes.model";
-import { ItemCategoty } from "./models/item.model";
+import helmet from "helmet"
+import bodyParser from "body-parser"
+import cors from "cors"
+import requestLogger from "./middleware/requestLogger"
+import routes from "./routes"
+import { ApiException } from "./util/Exceptions/ApiException"
 
 
 
 
 
-async function DBSandBox() {
-    //create table if not exist
-    const repository = await RepositoryFactory.create(DBType.POSTGRESQL, ItemCategoty.TOY);
-  
-    // create  toy : 
-    const idtoyBuild = new IdentifiableToyBuilder();
-    const toyBuild = new ToyBuilder();
-    const toy = toyBuild
-    
-      .setType("Action Figure")
-      .setAgeGroup("6-12")
-      .setBrand("Hasbro")
-      .setMaterial("Plastic")
-      .setBatteryRequired("No")
-      .setEducational("No")
-      .build();
 
+const app= express();
+// config helmet :
+app.use(helmet());
 
-     const bb = idtoyBuild.setToy(toy).setId("313").build();
+//config body parser :
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
 
-                            
+//config cors :
+app.use(cors())
 
 
 
+app.listen(config.port, config.host, ()=>{
+    logger.info(`Server is running on port http://%s:%d`,config.host,config.port);
+});
+//add middlwares :
+app.use(requestLogger);
 
-const idorderBuilder = new IdentifiableOrderBuilder()
-const idorder = idorderBuilder.setItem(bb).setPrice(14).setItem(bb).setQuantity(14).setId("212").build();
 
- const l = await repository.create(idorder);
-  logger.info(l);
+//config routes :
+app.use("/",routes);
 
-}
-           DBSandBox()
 
-async function as(){
-    const dbcake = new CakeRepository();
-    const dbOrder = new OrderRepository(new CakeRepository());
-    
+// config 404 handler :
+app.use((req, res, next)=>{
+    res.status(404).json({message: "Resource not found"});
+});
 
-    const s = await dbOrder.getById("5");
-    
-    logger.info("%o",s);
-
-}
-    // as();
-
-    async function get(){
-       const dbOrder = new OrderRepository(new ToyRepository());
-        const dbcake = new BookRepository();
-       const s = await dbOrder.getAll();
-       logger.info("%o",s);
+//config error handler :
+app.use((err : Error, req : express.Request, res : express.Response, next : express.NextFunction)=>{
+    if(err instanceof ApiException){
+       logger.error(`API Exception: ${err.message} ${err.status}`);
+       res.status(err.status).json({message: err.message});
+    }else {
+        logger.error(`Internal Server Error: ${err.message}`);
+        res.status(500).json({message: "Internal Server Error"});
     }
-    // get();
-
-    async function dd(){
-        const dbOrder = new OrderRepository(new BookRepository());
-        dbOrder.delete("5");
-               const s = await dbOrder.getAll();
-               logger.info("%o",s)
-
-    }
-    // dd();
-
-    async function uu(){
-            const cakeBuild = new CakeBuilder();
-    const cake = cakeBuild
-    
-  .setType("Birthday")
-  .setFlavor("Chocolate")
-  .setFilling("Vanilla Cream")
-  .setSize(12) 
-  .setLayers(3)
-  .setFrostingType("Buttercream")
-  .setFrostingFlavor("Strawberry")
-  .setDecorationType("Flowers")
-  .setDecorationColor("Red")
-  .setCustomMessage("Happy Birthday Ahmad!")
-  .setShape("Round")
-  .setAllergies("vv")
-  .setSpecialIngredients("ff")
-  .setPackagingType("Box")
-  .build();
-
-  //create identifiable cake :
-  const idcakeBuild = new IdentifiableCakeBuilder();
-
-  const  idcake = idcakeBuild.setCake(cake)
-                             .setId("4")
-                             .build()
-
-                             
-const idorderBuilder = new IdentifiableOrderBuilder()
-const idorder = idorderBuilder.setItem(idcake).setPrice(14).setItem(idcake).setQuantity(14).setId("5").build();
-        const dbOrder = new OrderRepository(new CakeRepository());
-        dbOrder.update(idorder)
-    }
-    //   uu();
+});
