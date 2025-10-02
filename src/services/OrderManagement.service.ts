@@ -5,8 +5,7 @@ import {DBType} from "../models/DBtypes.model"
 import {ItemCategoty} from "../models/item.model"
 import {IRepository} from "../Repositoy/IRepository"
 import {RepositoryFactory} from "../Repositoy/Repository.Factory"
-import { Order } from "models/order.model";
-import { generateUniqueId } from "../util";
+
     export class OrderManagementService { 
 
         //create order
@@ -24,11 +23,12 @@ import { generateUniqueId } from "../util";
 
         //get order by id
         public async getOrderById(id:string): Promise<IdentifiableOrderItem> {
-           
+           console.log("Service: Fetching order with id:", id);
                 const categories = Object.values(ItemCategoty);
                 for (const category of categories) {
                     const repo = await this.getRepository(category);
                     const order = await repo.getById(id);
+                    console.log(order);
                     if (order) {
                         return order;
                     }
@@ -67,7 +67,9 @@ import { generateUniqueId } from "../util";
                 const repo = await this.getRepository(category);
                 const orders = await repo.getAll();
                 allOrders = allOrders.concat(orders);
+                
             }
+            
             return allOrders;
         }catch(error : unknown)
         {

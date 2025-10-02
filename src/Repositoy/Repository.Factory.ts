@@ -14,7 +14,7 @@ import { DBType } from "../models/DBtypes.model";
 
 export class RepositoryFactory {
 
-    public static async create(mode: DBType, category: ItemCategoty): Promise<IRepository<IdentifiableOrderItem>> {
+    public static async create(mode: DBType, category: ItemCategoty): Promise<InitialzableRepository<IdentifiableOrderItem>> {
         switch (mode) {
             /**
              * Deprecated
@@ -41,7 +41,8 @@ export class RepositoryFactory {
                         throw new Error("Unknown DB type");
                 }
                 await PSrepository.init();
-                return PSrepository;
+                
+        return PSrepository;        
         }
         throw new Error("Unknown DB type");
     

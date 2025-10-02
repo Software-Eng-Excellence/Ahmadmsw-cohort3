@@ -1,10 +1,9 @@
 import {IMapper} from "./Imapper"
-import {Order} from "../models/order.model"
+import {IdentifiableOrder, Order} from "../models/order.model"
 import {IOrder,IdentifiableOrderItem} from "../models/Iorder.model"
 import { OrderBuilder ,IdentifiableOrderBuilder } from "../models/builder/order.builder"
 import { Item ,ItemWithId } from "../models/item.model";
-import {SQLiteCake} from "./Cake.mapper"
-import { Cake } from "models/cake.model";
+
 
 
 export class  CSVOrderMapper implements IMapper <string[],Order>{
@@ -117,4 +116,19 @@ export class XMLOrderMapper implements IMapper<{ [key: string]: string }, Order>
             "Price": data.getPrice().toString() 
     }
 }
+}
+
+export class JsonRequestMapper implements IMapper<any,IdentifiableOrder>{
+    constructor(private itemMapper:IMapper<any , ItemWithId>){}
+    map(data:any):IdentifiableOrder {
+        const item = this.itemMapper.map(data.iditem);
+
+        return new IdentifiableOrderBuilder().setId(data.id).setItem(item).setPrice(data.price).setQuantity(data.quantity).build();
+    }
+    reverseMap(data: IdentifiableOrder) {
+        return {
+            
+            ...data
+        }
+    }
 }

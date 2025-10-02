@@ -25,11 +25,11 @@ export async function readCsvFile(filePath: string , includedHeader : Boolean = 
 
 // Writes a 2D array of strings to a CSV file
 // Writes a 2D array of strings to a CSV file
-export async function writeCsvFile(filePath: string, data: string[][]): Promise<string[][]> {
+export async function writeCsvFile(filePath: string, data: string[][]): Promise<void> {
     try {
     const csvContent = csvStringify(data); 
     await fs.writeFile(filePath, csvContent, 'utf8');
-    return Promise.resolve(data); // i can here dont't use this ? 
+     // i can here dont't use this ? 
 
 } catch (error) {
         return Promise.reject(error); 

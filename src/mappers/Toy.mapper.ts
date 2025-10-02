@@ -73,3 +73,30 @@ export class SQLITEToyMapper implements IMapper<ISQLITEToy, IdentifiableToy> {
         };
 }
 }
+export class JsonRequestToyMapper implements IMapper<any, IdentifiableToy> {
+    map(data: any): IdentifiableToy {
+        return new IdentifiableToyBuilder()
+            .setId(data.id)
+            .setToy(new ToyBuilder()
+                .setType(data.type)
+                .setAgeGroup(data.age_group)
+                .setBrand(data.brand)
+                .setMaterial(data.material)
+                .setBatteryRequired(data.battery_required)
+                .setEducational(data.educational)
+                .build()
+    )
+            .build();
+    }
+    reverseMap(data: IdentifiableToy): any {
+        return {
+            id: data.getId(),
+            type: data.getType(),
+            ageGroup: data.getAgeGroup(),
+            brand: data.getBrand(),
+            material: data.getMaterial(),
+            batteryRequired: data.getBatteryRequired(),
+            educational: data.getEducational()
+        }
+    }
+}

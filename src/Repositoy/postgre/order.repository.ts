@@ -1,8 +1,7 @@
-import {IRepository} from "../IRepository"
-import {Order} from "../../models/order.model"
 
-import logger from "../../util/logger";
-import { Initialzable } from "../IRepository";
+
+
+
 import { InitialzableRepository } from "../IRepository";
 import { DatabaseException, ItemNotFoundException }from "../../util/Exceptions/RepositoryExceptions"
 import { ConnectionManager } from "./connectionManager.repository";
@@ -10,8 +9,8 @@ import {Item,ItemWithId} from "../../models/item.model"
 
 import {IdentifiableOrderItem, IOrder} from "../../models/Iorder.model"
 import {SQLiteOrderMapper,ISQLITEOrder}from "../../mappers/CSVorder.mapper"
-import {SQLITECakeMapper}from "../../mappers/Cake.mapper"
-import { table } from "console";
+import { PoolClient } from "pg";
+
 
 
     const CREATE_TABLE = `
@@ -28,7 +27,8 @@ import { table } from "console";
 
     const SELECT_ALL = `SELECT * FROM "order" WHERE Item_Categoty = $1`
 
-    const SELECT_BY_ID = `SELECT * FROM "order" WHERE id = $1`
+const SELECT_BY_ID = `SELECT * FROM "order" WHERE id = $1`;
+
     const DELETE_BY_ID = `DELETE  FROM "order" WHERE id = $1`;
     const UPDATE_BY_ID = `
              UPDATE "order"
@@ -41,166 +41,134 @@ import { table } from "console";
 
 export class OrderRepository implements InitialzableRepository<IdentifiableOrderItem> {
 
-    
-    constructor(private readonly itemRepository: InitialzableRepository<ItemWithId>) { 
-             
-          
-
-        }
+    constructor(private readonly itemRepository: InitialzableRepository<ItemWithId>) { }
 
     async init(): Promise<void> {
-
-            try {
-                const conn = await ConnectionManager.getConnection();
-
-                await  conn.query(CREATE_TABLE);
-                await this.itemRepository.init();
-                logger.info("create table");
-
-
-            }
-
-
-         catch (error) {
-            logger.error(`Database initialization failed: ${error}`);
+        let conn!: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection();
+            await conn.query(CREATE_TABLE);
+            await this.itemRepository.init();
+        } catch (error) {
             throw error;
+        } finally {
+            conn.release();
         }
     }
 
-
-
     async getAll(): Promise<IdentifiableOrderItem[]> {
+        let conn!: PoolClient;
         try {
-            const conn = await ConnectionManager.getConnection();
+            conn = await ConnectionManager.getConnection();
             const items = await this.itemRepository.getAll();
-            if(items.length ==0){
-                throw new ItemNotFoundException("No items At All")
+            if (items.length === 0) {
+                throw new ItemNotFoundException("No items At All");
             }
-            const orders = await conn.query(SELECT_ALL,[items[0].getCategory()]);
-            //bind ORDERS TO ITEMS :
-            const Porders : ISQLITEOrder[] = orders.rows;
-            const bindOrders = Porders.map((order) =>{
-                const item = items.find((item)=>item.getId() === order.item_id )
-                if(!item){
-                    throw new DatabaseException("Item Not found with respect to order getAll")
-                }
-                return {order,item}
-            } )
 
-            //foreach binded order and item return identifiableOrder
-            const identifiableOrders = bindOrders.map(({order,item}) =>{
-               return new SQLiteOrderMapper().map({data:order,item:item})
-            })
-            return identifiableOrders ;
-            
+            const orders = await conn.query(SELECT_ALL, [items[0].getCategory()]);
+            const Porders: ISQLITEOrder[] = orders.rows;
+
+            const bindOrders = Porders.map((order) => {
+                const item = items.find((item) => item.getId() === order.item_id);
+                if (!item) {
+                    throw new DatabaseException("Item Not found with respect to order getAll");
+                }
+                return { order, item };
+            });
+
+            return bindOrders.map(({ order, item }) =>
+                new SQLiteOrderMapper().map({ data: order, item })
+            );
+
         } catch (error) {
             throw new DatabaseException("Error get Orders ALL" + error);
+        } finally {
+             conn.release();
         }
-
-       
-
     }
 
     async getById(id: string): Promise<IdentifiableOrderItem> {
-        // Replace with actual SQLite query logic
-        // const row = await db.get('SELECT * FROM orders WHERE id = ?', [id]);
-        // return row as Order;
+        let conn!: PoolClient;
+        let result :any ;
         try {
-        const conn = await ConnectionManager.getConnection();
-        
-        const x = await conn.query(SELECT_BY_ID,[id]);
+            conn = await ConnectionManager.getConnection();
+            const x = await conn.query(SELECT_BY_ID, [id]);
+            console.log("Iam Here : ")
+            if (!x) {
+                throw new ItemNotFoundException("Order not found of id " + id);
+                
+            }
+            const row: ISQLITEOrder = x.rows[0];
+            const item = await this.itemRepository.getById(row.item_id);
+            if(item){
+             result = new SQLiteOrderMapper().map({ data: row, item });
+            }
+            return result;
 
-       
-        if(!x){
-
-            throw new ItemNotFoundException("Order not found of id "+id)
+        } catch (error: unknown) {
+            throw new DatabaseException("Failed to get order of Id " + id);
+        } finally {
+             conn.release();
         }
-        else {
-        const row : ISQLITEOrder = x.rows[0];     
-        const cake = await this.itemRepository.getById(row.item_id)
-        const result = new SQLiteOrderMapper().map({data:row , item:cake});
-        
-        return result
-        
-        
-        }
-        }catch(error : unknown)
-        {
-            logger.error("Fail to get order of id : %s error : %o ", id,error as Error);
-            throw new DatabaseException("Failed to get order of Id "+id)
-        }
-
-        
     }
 
-    async create(order : IdentifiableOrderItem): Promise<string> {
-        let conn ;
-
+    async create(order: IdentifiableOrderItem): Promise<string> {
+        let conn !: PoolClient;
         try {
-            
             conn = await ConnectionManager.getConnection();
             await conn.query("BEGIN TRANSACTION");
-            const item_id  = await this.itemRepository.create(order.getItem()); // that for the spesific item like cake for example
-            //here we use D from SOLID
-            await conn.query(CREATE_ITEM_TABLE, [order.getId(), order.getQuantity(), order.getPrice(), order.getItem().getCategory(), item_id]);
-
+            const item_id = await this.itemRepository.create(order.getItem());
+            await conn.query(CREATE_ITEM_TABLE, [
+                order.getId(),
+                order.getQuantity(),
+                order.getPrice(),
+                order.getItem().getCategory(),
+                item_id
+            ]);
             await conn.query("COMMIT");
-            
             return order.getId();
-            
-        }
-        catch (error:unknown) {
-
-            logger.error(`Order Creating : Creating order failed: ${error}`);
-            conn && await conn.query("ROLLBACK");
+        } catch (error: unknown) {
+            if (conn) await conn.query("ROLLBACK");
             throw new DatabaseException('Creating order failed');
+        } finally {
+             conn.release();
         }
-        //transcation
-             //insert data into order table
-            //insert data into item table 
-        //commit
-        //return id
-       
-        //throw error if failed
-
     }
 
     async update(order: IdentifiableOrderItem): Promise<void> {
-             try {
-        const conn = await ConnectionManager.getConnection();
-        
-        await conn.query("BEGIN TRANSACTION");
-        await this.itemRepository.update(order.getItem())
-await conn.query(UPDATE_BY_ID, [
-  order.getQuantity(),
-  order.getPrice(),
-  order.getItem().getCategory(),
-  order.getItem().getId(),
-  order.getId()
-]);
-
-        await conn.query("COMMIT");
-
-        }catch(error : unknown)
-        {
-            logger.error("Fail to UPDATE Order of id : %s error : %o ", order.getId(),error as Error);
-            throw new DatabaseException("Failed to UPDATE Order of Id "+order.getId())
+        let conn !: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection();
+            await conn.query("BEGIN TRANSACTION");
+            await this.itemRepository.update(order.getItem());
+            await conn.query(UPDATE_BY_ID, [
+                order.getQuantity(),
+                order.getPrice(),
+                order.getItem().getCategory(),
+                order.getItem().getId(),
+                order.getId()
+            ]);
+            await conn.query("COMMIT");
+        } catch (error: unknown) {
+            throw new DatabaseException("Failed to UPDATE Order of Id " + order.getId());
+        } finally {
+             conn.release();
         }
     }
 
     async delete(id: string): Promise<void> {
-             try {
-        const conn = await ConnectionManager.getConnection();
-        const order = await this.getById(id);
-        await conn.query("BEGIN TRANSACTION");
-        await this.itemRepository.delete(order.getItem().getId())
-         await conn.query(DELETE_BY_ID,[id]);
-        await conn.query("COMMIT");
-
-        }catch(error : unknown)
-        {
-            logger.error("Fail to DELTE Order of id : %s error : %o ", id,error as Error);
-            throw new DatabaseException("Failed to Delete Order of Id "+id)
+        let conn !: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection();
+            const order = await this.getById(id);
+            await conn.query("BEGIN TRANSACTION");
+            await this.itemRepository.delete(order.getItem().getId());
+            await conn.query(DELETE_BY_ID, [id]);
+            await conn.query("COMMIT");
+        } catch (error: unknown) {
+            throw new DatabaseException("Failed to Delete Order of Id " + id);
+        } finally {
+            conn.release();
         }
     }
 

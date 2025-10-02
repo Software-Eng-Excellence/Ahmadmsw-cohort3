@@ -10,7 +10,7 @@ export class ConnectionManager {
     public static async getConnection(): Promise<PoolClient> {
         if (this.pool === null) {
             try {
-                const connectionString = config.postgreSQL.connectionString;
+                const connectionString = config.postgre.connectionString;
                 this.pool = new Pool({ connectionString });
 
             }
@@ -22,7 +22,7 @@ export class ConnectionManager {
 
         try {
             const instance = await this.pool.connect();
-            logger.info("Connected to database successfully");
+            
             return instance;
         } catch (error : any) {
             logger.error("Failed to connect to database %o", error);

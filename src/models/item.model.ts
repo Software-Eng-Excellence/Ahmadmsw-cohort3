@@ -1,9 +1,12 @@
 
 import { ID } from "../Repositoy/IRepository";  
 export enum ItemCategoty {
+    TOY = 'toy',
     CAKE = "cake",
     BOOK = 'book',
-    TOY = 'toy',
+    
+    
+    
     
 }
 

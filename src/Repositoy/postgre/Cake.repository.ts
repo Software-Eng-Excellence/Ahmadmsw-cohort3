@@ -1,15 +1,14 @@
-import {Database} from 'sqlite3';
-import { open } from 'sqlite';
-import config from "../../config/index";
+
+
 import logger from "../../util/logger";
-import { Initialzable } from "../IRepository";
 import { InitialzableRepository } from "../IRepository";
 import {IdentifiableCake} from "../../models/cake.model"
 import {ConnectionManager} from "./connectionManager.repository"
-import {ItemWithId} from "../../models/item.model"
+
 import {DatabaseException, ItemNotFoundException} from "../../util/Exceptions/RepositoryExceptions"
 import {ItemCategoty } from "../../models/item.model"
 import {SQLITECakeMapper,SQLiteCake} from "../../mappers/Cake.mapper"
+import { PoolClient } from "pg";
 
 const table_name = ItemCategoty.CAKE ;
 const CREATE_TABLE = `
@@ -47,91 +46,99 @@ const UPDATE_CAKE = `update ${table_name} set type = $1, flavor = $2, filling = 
 
 export class CakeRepository implements InitialzableRepository<IdentifiableCake> {
 
-   
-       async init(): Promise<void> {
+    async init(): Promise<void> {
+        let conn!: PoolClient;
         try {
-            const conn = await ConnectionManager.getConnection();
+            conn = await ConnectionManager.getConnection();
             await conn.query(CREATE_TABLE);
-            logger.info('Database initialized and table created if not exists cake');
-        }catch (error) {
+            
+        } catch (error) {
             logger.error(`Database initialization failed: ${error}`);
             throw error;
+        } finally {
+            conn.release();
         }
     }
 
     async getAll(): Promise<IdentifiableCake[]> {
+        let conn!: PoolClient;
         try {
-        const conn = await ConnectionManager.getConnection();
-        const result = await conn.query(SELECT_ALL);
-        
-        if(!result){
-            throw new DatabaseException("no Cakes")
-        }
-        const rows : SQLiteCake[] = result.rows;
-        const mapper = new SQLITECakeMapper()  ;
+            conn = await ConnectionManager.getConnection();
+            const result = await conn.query(SELECT_ALL);
 
-        return rows.map((item)=> mapper.map(item))
-        }catch(error : unknown)
-        {
-            logger.error("Fail to get Cake of id : %s error : %o ",error as Error);
+            if (!result) {
+                throw new DatabaseException("no Cakes")
+            }
+            const rows: SQLiteCake[] = result.rows;
+            const mapper = new SQLITECakeMapper();
+
+            return rows.map((item) => mapper.map(item));
+        } catch (error: unknown) {
+            logger.error("Fail to get Cake of id : %s error : %o ", error as Error);
             throw new DatabaseException("Failed to get Cakes");
+        } finally {
+            conn.release();
         }
     }
-    async getById(id: string): Promise<IdentifiableCake> {
-        try {
-        const conn = await ConnectionManager.getConnection();
-        const x = await conn.query(SELECT_BY_ID,[id]);
-        if(!x){
-            throw new ItemNotFoundException("cake not found of id "+ id);
-        }
-        const row : SQLiteCake = x.rows[0];
-        const result = new SQLITECakeMapper().map(row);
-        return result
-        }catch(error : unknown)
-        {
-            logger.error("Fail to get Cake of id : %s error : %o ", id,error as Error);
-            throw new DatabaseException("Failed to get Cake of Id "+id)
-        }
-    }
-    async create(item: IdentifiableCake): Promise<string> { //create cake order
-        try {
-                    const conn = await ConnectionManager.getConnection()
-        
-            await conn.query(
-            INSERT_CAKE,
-            [
-                item.getId(),
-                item.getType(),
-                item.getFlavor(),
-                item.getFilling(),
-                item.getSize(),
-                item.getLayers(),
-                item.getFrostingType(),
-                item.getFrostingFlavor(),
-                item.getDecorationType(),
-                item.getDecorationColor(),
-                item.getCustomMessage(),
-                item.getShape(),
-                item.getAllergies(),
-                item.getSpecialIngredients(),
-                item.getPackagingType()
-            ],
-    
-            );
 
-       logger.info("success Create From Cake")
-        return item.getId();
-            
+    async getById(id: string): Promise<IdentifiableCake> {
+        let conn!: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection();
+            const x = await conn.query(SELECT_BY_ID, [id]);
+            // if (!x) {
+            //     throw new ItemNotFoundException("cake not found of id " + id);
+            // }
+            const row: SQLiteCake = x.rows[0];
+            const result = new SQLITECakeMapper().map(row);
+            return result
+        } catch (error: unknown) {
+            logger.error("Fail to get Cake of id : %s error : %o ", id, error as Error);
+            throw new DatabaseException("Failed to get Cake of Id " + id)
+        } finally {
+             conn.release();
+        }
+    }
+
+    async create(item: IdentifiableCake): Promise<string> {
+        let conn!: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection()
+            await conn.query(
+                INSERT_CAKE,
+                [
+                    item.getId(),
+                    item.getType(),
+                    item.getFlavor(),
+                    item.getFilling(),
+                    item.getSize(),
+                    item.getLayers(),
+                    item.getFrostingType(),
+                    item.getFrostingFlavor(),
+                    item.getDecorationType(),
+                    item.getDecorationColor(),
+                    item.getCustomMessage(),
+                    item.getShape(),
+                    item.getAllergies(),
+                    item.getSpecialIngredients(),
+                    item.getPackagingType()
+                ],
+            );
+         
+            return item.getId();
         } catch (error) {
             logger.error("Create Cake error happens here %o", error as Error);
-            throw new DatabaseException("Cake create : Error happens here " );
+            throw new DatabaseException("Cake create : Error happens here ");
+        } finally {
+           conn.release();
         }
-
     }
+
     async update(item: IdentifiableCake): Promise<void> {
+        let conn;
         try {
-        const conn = await ConnectionManager.getConnection();
-             await conn.query(UPDATE_CAKE, [
+            conn = await ConnectionManager.getConnection();
+            await conn.query(UPDATE_CAKE, [
                 item.getType(),
                 item.getFlavor(),
                 item.getFilling(),
@@ -148,29 +155,26 @@ export class CakeRepository implements InitialzableRepository<IdentifiableCake> 
                 item.getPackagingType(),
                 item.getId()
             ]);
-
-        logger.info("Cake Updated");
-        
-       
-       
-        }catch(error : unknown)
-        {
-            logger.error("Fail to Update Cake of id : %s error : %o ", item.getId(),error as Error);
-            throw new DatabaseException("Failed to Update Cake of Id "+item.getId())
+           
+        } catch (error: unknown) {
+            logger.error("Fail to Update Cake of id : %s error : %o ", item.getId(), error as Error);
+            throw new DatabaseException("Failed to Update Cake of Id " + item.getId())
+        } finally {
+            if (conn) conn.release();
         }
     }
+
     async delete(id: string): Promise<void> {
-              try {
-        const conn = await ConnectionManager.getConnection();
-         await conn.query(DELETE_ID,[id]);
-        logger.info("Cake Deleted")
-       
-       
-        }catch(error : unknown)
-        {
-            logger.error("Fail to Delete Cake of id : %s error : %o ", id,error as Error);
-            throw new DatabaseException("Failed to Delete Cake of Id "+id)
+        let conn!: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection();
+            await conn.query(DELETE_ID, [id]);
+         
+        } catch (error: unknown) {
+            logger.error("Fail to Delete Cake of id : %s error : %o ", id, error as Error);
+            throw new DatabaseException("Failed to Delete Cake of Id " + id)
+        } finally {
+             conn.release();
         }
     }
-
 }

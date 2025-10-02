@@ -1,15 +1,15 @@
-import {Database} from 'sqlite3';
-import { open } from 'sqlite';
-import config from "../../config/index";
+
+
 import logger from "../../util/logger";
-import { Initialzable } from "../IRepository";
+
 import { InitialzableRepository } from "../IRepository";
 import {IdentifiableToy} from "../../models/toy.model"
 import {ConnectionManager} from "./connectionManager.repository"
-import {ItemWithId} from "../../models/item.model"
+
 import {DatabaseException, ItemNotFoundException} from "../../util/Exceptions/RepositoryExceptions"
 import {ItemCategoty } from "../../models/item.model"
 import {SQLITEToyMapper,ISQLITEToy} from "../../mappers/Toy.mapper"
+import { PoolClient } from "pg";
 
 const table_name = ItemCategoty.TOY ;
 const CREATE_TABLE = `
@@ -48,56 +48,65 @@ const UPDATE_TOY = `UPDATE ${table_name} SET
 
 export class ToyRepository implements InitialzableRepository<IdentifiableToy> {
 
-   
-       async init(): Promise<void> {
+    async init(): Promise<void> {
+        let conn!: PoolClient;
         try {
-            const conn = await ConnectionManager.getConnection();
+            conn = await ConnectionManager.getConnection();
             await conn.query(CREATE_TABLE);
-            logger.info('Database initialized and table created if not exists cake');
-        }catch (error) {
+            
+        } catch (error) {
             logger.error(`Database initialization failed: ${error}`);
             throw error;
+        } finally {
+             conn.release();
         }
     }
 
     async getAll(): Promise<IdentifiableToy[]> {
+        let conn!: PoolClient;
         try {
-        const conn = await ConnectionManager.getConnection();
-        const result = await conn.query(SELECT_ALL);
-        
-        if(!result){
-            throw new DatabaseException("no Toys")
-        }
-        const rows : ISQLITEToy[] = result.rows;
-        const mapper = new SQLITEToyMapper()  ;
+            
+            conn = await ConnectionManager.getConnection();
+            const result = await conn.query(SELECT_ALL);
 
-        return rows.map((item)=> mapper.map(item))
-        }catch(error : unknown)
-        {
-            logger.error("Fail to get Toy of id : %s error : %o ",error as Error);
+            if (!result) {
+                throw new DatabaseException("no Toys")
+            }
+            const rows: ISQLITEToy[] = result.rows;
+            const mapper = new SQLITEToyMapper();
+
+            return rows.map((item) => mapper.map(item));
+        } catch (error: unknown) {
+            logger.error("Fail to get Toy of id : %s error : %o ", error as Error);
             throw new DatabaseException("Failed to get Toys");
+        } finally {
+             conn.release();
         }
     }
+
     async getById(id: string): Promise<IdentifiableToy> {
+        let conn;
         try {
-        const conn = await ConnectionManager.getConnection();
-        const x = await conn.query(SELECT_BY_ID,[id]);
-        if(!x){
-            throw new ItemNotFoundException("toy not found of id "+ id);
-        }
-        const row : ISQLITEToy = x.rows[0];
-        const result = new SQLITEToyMapper().map(row);
-        return result
-        }catch(error : unknown)
-        {
-            logger.error("Fail to get Toy of id : %s error : %o ", id,error as Error);
-            throw new DatabaseException("Failed to get Toy of Id "+id)
+            conn = await ConnectionManager.getConnection();
+            const x = await conn.query(SELECT_BY_ID, [id]);
+            // if (!x) {
+            //     return null 
+            // }
+            const row: ISQLITEToy = x.rows[0];
+            const result = new SQLITEToyMapper().map(row);
+            return result
+        } catch (error: unknown) {
+            logger.error("Fail to get Toy of id : %s error : %o ", id, error as Error);
+            throw new DatabaseException("Failed to get Toy of Id " + id)
+        } finally {
+            if (conn) conn.release();
         }
     }
-    async create(item: IdentifiableToy): Promise<string> { //create toy order
+
+    async create(item: IdentifiableToy): Promise<string> {
+        let conn!: PoolClient;
         try {
-                    const conn = await ConnectionManager.getConnection()
-        
+            conn = await ConnectionManager.getConnection()
             await conn.query(
                 INSERT_TOY,
                 [
@@ -108,56 +117,51 @@ export class ToyRepository implements InitialzableRepository<IdentifiableToy> {
                     item.getMaterial(),
                     item.getBatteryRequired(),
                     item.getEducational(),
-                    
-                    
-
                 ]
             );
-
-       logger.info("success Create From Toy")
-        return item.getId();
-            
+           
+            return item.getId();
         } catch (error) {
             logger.error("Create Toy error happens here %o", error as Error);
-            throw new DatabaseException("Toy create : Error happens here " );
+            throw new DatabaseException("Toy create : Error happens here ");
+        } finally {
+             conn.release();
         }
-
     }
+
     async update(item: IdentifiableToy): Promise<void> {
+        let conn!: PoolClient;
         try {
-        const conn = await ConnectionManager.getConnection();
-             await conn.query(UPDATE_TOY, [
-                    item.getId(),
-                    item.getType(),
-                    item.getAgeGroup(),
-                    item.getBrand(),
-                    item.getMaterial(),
-                    item.getBatteryRequired(),
-                    item.getEducational(),
+            conn = await ConnectionManager.getConnection();
+            await conn.query(UPDATE_TOY, [
+                item.getId(),
+                item.getType(),
+                item.getAgeGroup(),
+                item.getBrand(),
+                item.getMaterial(),
+                item.getBatteryRequired(),
+                item.getEducational(),
             ]);
-        logger.info("Toy Updated");
-        }catch(error : unknown)
-        {
-            logger.error("Fail to Update Toy of id : %s error : %o ", item.getId(),error as Error);
-            throw new DatabaseException("Failed to Update Toy of Id "+item.getId())
+            
+        } catch (error: unknown) {
+            logger.error("Fail to Update Toy of id : %s error : %o ", item.getId(), error as Error);
+            throw new DatabaseException("Failed to Update Toy of Id " + item.getId())
+        } finally {
+             conn.release();
         }
     }
-
-
-
 
     async delete(id: string): Promise<void> {
-              try {
-        const conn = await ConnectionManager.getConnection();
-         await conn.query(DELETE_ID,[id]);
-        logger.info("Book Deleted")
-       
-       
-        }catch(error : unknown)
-        {
-            logger.error("Fail to Delete Book of id : %s error : %o ", id,error as Error);
-            throw new DatabaseException("Failed to Delete Book of Id "+id)
+        let conn !: PoolClient;
+        try {
+            conn = await ConnectionManager.getConnection();
+            await conn.query(DELETE_ID, [id]);
+           
+        } catch (error: unknown) {
+            logger.error("Fail to Delete Book of id : %s error : %o ", id, error as Error);
+            throw new DatabaseException("Failed to Delete Book of Id " + id)
+        } finally {
+             conn.release();
         }
     }
-
 }
