@@ -7,6 +7,8 @@ import { CakeRepository } from "./postgre/Cake.repository";
 import { BookRepository } from "./postgre/Book.repository";
 import { ToyRepository } from "./postgre/Toy.Repository";
 import { DBType } from "../models/DBtypes.model";
+import {UserRpository} from "./postgre/user.repository"
+import {User} from "../models/user.model"
 
 
 
@@ -46,6 +48,14 @@ export class RepositoryFactory {
         }
         throw new Error("Unknown DB type");
     
+
+    }
+    public static async createUser():Promise<InitialzableRepository<User>> {
+        let UserRepo : InitialzableRepository<User>;
+        UserRepo = new UserRpository();
+        UserRepo.init();
+        return UserRepo ;
+
 
     }
 }

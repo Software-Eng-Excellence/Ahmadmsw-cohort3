@@ -58,11 +58,11 @@ export class OrderController {
      public async updateOrder(req: Request, res: Response , next : NextFunction) {
         const id = req.params.id;
         if (!id) {
-         console.log("error")
+         console.log("Item not found to handle it in Update ")
         }
         const order: IdentifiableOrder = JsonRequestFactory.createMapper(req.body.category).map(req.body);
         if (!order) {
-                      console.log("error")
+                      console.log("Something is error")
         }
         if (order.getId() !== id) {
              console.log("error")
