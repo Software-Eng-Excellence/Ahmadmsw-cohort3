@@ -1,3 +1,4 @@
+import dotenv from "dotenv"
 
 
 export default {
@@ -11,5 +12,9 @@ export default {
 
    },
       port : process.env.PORT ? parseInt(process.env.PORT) : 3000,
-      host: process.env.HOST || "localhost"
+      host: process.env.HOST || "localhost",
+      auth : {
+         secretKey : "secret123456",
+         TokenExpiration: 0.5
+      }
    }

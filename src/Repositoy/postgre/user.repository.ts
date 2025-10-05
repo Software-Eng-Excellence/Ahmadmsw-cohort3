@@ -7,6 +7,7 @@ import { DatabaseException, ItemNotFoundException }from "../../util/Exceptions/R
 import { ConnectionManager } from "./connectionManager.repository";
 
 
+
 import {User} from "../../models/user.model"
 
 import { PoolClient } from "pg";
@@ -45,7 +46,7 @@ const UPDATE_BY_ID = `
     WHERE id = $4
 `
 
-            
+    const SELECT_BY_EMAIL = `SELECT * FROM "user" WHERE email = $1`        
             
 
 
@@ -166,6 +167,21 @@ export class UserRpository implements InitialzableRepository<User> {
             throw new DatabaseException("Failed to Delete User of Id " + id);
         } finally {
             conn.release();
+        }
+    }
+    async getUserByEmail(email:string):Promise<User>{
+        let mapping = new userMapper();
+        let conn!:PoolClient;
+        try{
+            conn = await ConnectionManager.getConnection();
+            const data = await conn.query(SELECT_BY_EMAIL,[email]);
+            
+            const user : IuserData = data.rows[0];
+            
+            const Puser = mapping.map(user);
+            return Puser
+        }catch(error){
+            throw new DatabaseException("Failed to get User of Email " + email);
         }
     }
 

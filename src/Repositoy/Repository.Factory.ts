@@ -50,9 +50,10 @@ export class RepositoryFactory {
     
 
     }
-    public static async createUser():Promise<InitialzableRepository<User>> {
-        let UserRepo : InitialzableRepository<User>;
+    public static async createUser():Promise<UserRpository> {
+        let UserRepo : UserRpository;
         UserRepo = new UserRpository();
+        
         UserRepo.init();
         return UserRepo ;
 

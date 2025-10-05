@@ -2,17 +2,20 @@
 import {User} from "../models/user.model"
 import { ServiceException } from "../util/Exceptions/Service.Exception";
 
-import {IRepository} from "../Repositoy/IRepository"
+
 import {RepositoryFactory} from "../Repositoy/Repository.Factory"
+
+import { UserRpository } from "Repositoy/postgre/user.repository";
 
     export class UserSerivce { 
 
         //create order
         public async createUser(user: User): Promise<string> {
             //Validate Order
-            console.log(user);
-            if (!this.validateOrder(user)) {
+            
+            if (!this.validateUser(user)) {
                 throw new ServiceException("Missing Parameters", new Error("Missing Parameters"));
+                
             }
 
             //persist order
@@ -35,7 +38,7 @@ import {RepositoryFactory} from "../Repositoy/Repository.Factory"
         //update order
         public async updateUser(user:User): Promise<void> {
             //Validate Order
-            if (!this.validateOrder(user)) {
+            if (!this.validateUser(user)) {
                 throw new ServiceException("Misiign Parameters", new Error("Order must have a valid item, price and quantity"));
             }
 
@@ -72,8 +75,8 @@ import {RepositoryFactory} from "../Repositoy/Repository.Factory"
 
 
         //validate order
-        private validateOrder(user:User): boolean { 
-           if(!user.getName || !user.getEmail || !user.getPassword) {
+        private validateUser(user:User): boolean { 
+           if( !user.getEmail || !user.getPassword) {
             throw new ServiceException("Missung Parameters", new Error("Missing Parameteres"));
                
            }
@@ -81,10 +84,19 @@ import {RepositoryFactory} from "../Repositoy/Repository.Factory"
         
         return true; 
     }
-
+    public async ValidateUserExist(email:string ,password:string):Promise<string>{
+        const user = await (await this.getRepository()).getUserByEmail(email);
+        if(!user){
+            throw new Error("user Note Found");
+        }
+        if(user.getPassword() !== password){
+            throw new Error("Password Invalid");
+        }
+        return (user.getId());
+    }
 
     //get repo :
-    private async getRepository():Promise<IRepository<User>> {
+    private async getRepository():Promise<UserRpository> {
         return RepositoryFactory.createUser();
 }
 
