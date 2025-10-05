@@ -38,6 +38,7 @@ const SELECT_BY_ID = `SELECT * FROM "order" WHERE id = $1`;
             item_id = $4
             WHERE id = $5`;
 
+    
 
 export class OrderRepository implements InitialzableRepository<IdentifiableOrderItem> {
 
@@ -93,11 +94,12 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
         try {
             conn = await ConnectionManager.getConnection();
             const x = await conn.query(SELECT_BY_ID, [id]);
-            console.log("Iam Here : ")
+            
             if (!x) {
                 throw new ItemNotFoundException("Order not found of id " + id);
                 
             }
+            
             const row: ISQLITEOrder = x.rows[0];
             const item = await this.itemRepository.getById(row.item_id);
             if(item){
@@ -171,5 +173,6 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
             conn.release();
         }
     }
+   
 
 }

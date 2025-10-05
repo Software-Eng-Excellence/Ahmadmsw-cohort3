@@ -5,15 +5,18 @@ import {DBType} from "../models/DBtypes.model"
 import {ItemCategoty} from "../models/item.model"
 import {IRepository} from "../Repositoy/IRepository"
 import {RepositoryFactory} from "../Repositoy/Repository.Factory"
+import {BadRequestException} from "../util/httpException/BadRequestException"
+import {NotFoundException} from "../util/httpException/notFoundException"
+
+
 
     export class OrderManagementService { 
 
         //create order
         public async createOrder(Order:IdentifiableOrderItem): Promise<string> {
             //Validate Order
-            if (!this.validateOrder(Order)) {
-                throw new ServiceException("Invalid Order", new Error("Order must have a valid item, price and quantity"));
-            }
+            this.validateOrder(Order)
+
 
             //persist order
             const repo = await this.getRepository(Order.getItem().getCategory());
@@ -34,15 +37,13 @@ import {RepositoryFactory} from "../Repositoy/Repository.Factory"
                     }
                     
                 }
-            throw new ServiceException(`Order not found Get By Id: ${id}`, new Error("Order not found"));
+            throw new NotFoundException(`Order not found Get By Id: ${id}`);
   
         }
         //update order
         public async updateOrder(Order:IdentifiableOrderItem): Promise<void> {
             //Validate Order
-            if (!this.validateOrder(Order)) {
-                throw new ServiceException("Invalid Order", new Error("Order must have a valid item, price and quantity"));
-            }
+            this.validateOrder(Order)
 
             //persist order
             const repo = await this.getRepository(Order.getItem().getCategory());
@@ -56,7 +57,7 @@ import {RepositoryFactory} from "../Repositoy/Repository.Factory"
                 await repo.delete(id);
                 return;
             }
-            throw new ServiceException(`Order not found Delete By Id: ${id}`, new Error("Order not found"));
+            throw new NotFoundException(`Order not found Delete By Id: ${id}`);
         }
 
         public async getAllOrders(): Promise<IdentifiableOrderItem[]> { 
@@ -73,7 +74,7 @@ import {RepositoryFactory} from "../Repositoy/Repository.Factory"
             return allOrders;
         }catch(error : unknown)
         {
-            throw new ServiceException("Failed to get all orders", error as Error);
+            throw new NotFoundException("Failed to get all orders");
         }
     }
     public async getTotalRevenue(): Promise<number> { 
@@ -126,7 +127,12 @@ public async getTotalRevenueByCategory(category: ItemCategoty): Promise<number> 
         //validate order
         private validateOrder(Order:IdentifiableOrderItem): boolean { 
            if(!Order.getItem()||Order.getPrice()<=0|| Order.getQuantity()<=0) {
-            throw new ServiceException("Invalid Order", new Error("Order must have a valid item, price and quantity"));
+            const detials = {
+                ItemNotFound : !Order.getItem(),
+                Price : Order.getPrice() < 0,
+                Quantity : Order.getQuantity() < 0
+            }
+            throw new BadRequestException("Invalid Order",detials);
                
            }
            

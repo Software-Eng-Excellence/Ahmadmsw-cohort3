@@ -4,6 +4,7 @@ import { ApiException } from "../util/Exceptions/ApiException";
 import { IdentifiableOrder } from "../models/order.model";
 import {JsonRequestFactory} from "../mappers/index"
 import {ItemCategoty} from "../models/item.model"
+import { BadRequestException } from "../util/httpException/BadRequestException";
 
 export class OrderController {
     constructor(private readonly orderService: OrderManagementService) {}
@@ -13,11 +14,11 @@ export class OrderController {
     public async getOrderById(req: Request, res: Response, next: NextFunction){
         try {
             const id = req.params.id;
-            console.log("Fetching order with id:", id);
+            
             const order = await this.orderService.getOrderById(id);
             res.status(200).json(order);
         } catch (error) {
-            next(new ApiException(400,"Failed to get order by id", error as Error));
+            next(new BadRequestException("Failed to get order by id"));
         }
     }
     //get all orders
@@ -27,7 +28,7 @@ export class OrderController {
             res.status(200).json(orders);
             
         } catch (error) {
-            next(new ApiException(400,"Failed to get all orders", error as Error));
+            next(new BadRequestException("Failed to get all orders"));
         }
     }
     public async createOrder(req: Request, res: Response) {
@@ -36,7 +37,7 @@ export class OrderController {
      const order: IdentifiableOrder = JsonRequestFactory.createMapper(ItemCategoty.CAKE).map(req.body);
     console.log(order)
     if (!order) {
-        throw new Error("Order is required to create order");
+        throw new BadRequestException("Order is required to create order");
     }
      const newOrder = await this.orderService.createOrder(order);
     res.status(201).json(newOrder);
@@ -51,14 +52,14 @@ export class OrderController {
         await this.orderService.deleteOrder(id);
         res.status(204).send({ message: "Order deleted successfully" });
         }catch(error :any){
-             next(new ApiException(400,"Failed to get order by id", error as Error));
+             next(new BadRequestException("Failed to get order by id"));
         }
     }
 
      public async updateOrder(req: Request, res: Response , next : NextFunction) {
         const id = req.params.id;
         if (!id) {
-         console.log("Item not found to handle it in Update ")
+         
         }
         const order: IdentifiableOrder = JsonRequestFactory.createMapper(req.body.category).map(req.body);
         if (!order) {
