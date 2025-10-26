@@ -14,7 +14,7 @@ import { UserRpository } from "Repositoy/postgre/user.repository";
             //Validate Order
             
             if (!this.validateUser(user)) {
-                throw new ServiceException("Missing Parameters", new Error("Missing Parameters"));
+                throw new ServiceException("Missing Parameters", new Error("Order must have a valid item, price and quantity"));
                 
             }
 

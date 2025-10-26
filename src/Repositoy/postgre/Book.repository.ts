@@ -1,5 +1,5 @@
-import logger from "../../util/logger";
 
+import logger from "../../util/logger";
 
 import { InitialzableRepository } from "../IRepository";
 import {IdentifiableBook} from "../../models/book.model"
@@ -8,7 +8,6 @@ import {ConnectionManager} from "./connectionManager.repository"
 import {DatabaseException, ItemNotFoundException} from "../../util/Exceptions/RepositoryExceptions"
 import {ItemCategoty } from "../../models/item.model"
 import {SQLiteBookMapper,ISQLITEBook} from "../../mappers/Book.mapper"
-import { PoolClient } from "pg";
 
 const table_name = ItemCategoty.BOOK ;
 const CREATE_TABLE = `
@@ -35,8 +34,8 @@ const SELECT_ALL = `SELECT * FROM ${table_name}`;
 
 const DELETE_ID = `DELETE FROM ${table_name} WHERE id = $1`;
 
-const UPDATE_BOOK = `UPDATE ${table_name} SET
-    
+const UPDATE_BOOK = `update ${table_name} set 
+    , 
     title = $2, 
     author = $3, 
     genre = $4, 
@@ -55,50 +54,41 @@ export class BookRepository implements InitialzableRepository<IdentifiableBook> 
 
    
        async init(): Promise<void> {
-        let conn!:PoolClient;
         try {
-            conn = await ConnectionManager.getConnection();
+            const conn = await ConnectionManager.getConnection();
             await conn.query(CREATE_TABLE);
-            
-            
+            logger.info('Database initialized and table created if not exists cake');
         }catch (error) {
             logger.error(`Database initialization failed: ${error}`);
             throw error;
         }
-        finally{
-            conn.release();
-        }
     }
 
     async getAll(): Promise<IdentifiableBook[]> {
-        let conn!: PoolClient;
         try {
-            conn = await ConnectionManager.getConnection();
-            const result = await conn.query(SELECT_ALL);
-
-            if (!result) {
-                throw new DatabaseException("no Books")
-            }
-            const rows: ISQLITEBook[] = result.rows;
-            const mapper = new SQLiteBookMapper();
-
-            return rows.map((item) => mapper.map(item));
-        } catch (error: unknown) {
-            logger.error("Fail to get Book of id : %s error : %o ", error as Error);
-            throw new DatabaseException("Failed to get Cakes");
+        const conn = await ConnectionManager.getConnection();
+        const result = await conn.query(SELECT_ALL);
+        
+        if(!result){
+            throw new DatabaseException("no Books")
         }
-        finally{
-            conn.release();
+        const rows : ISQLITEBook[] = result.rows;
+        const mapper = new SQLiteBookMapper()  ;
+
+        return rows.map((item)=> mapper.map(item))
+        }catch(error : unknown)
+        {
+            logger.error("Fail to get Book of id : %s error : %o ",error as Error);
+            throw new DatabaseException("Failed to get Cakes");
         }
     }
     async getById(id: string): Promise<IdentifiableBook> {
-        let conn!:PoolClient;
         try {
-         conn = await ConnectionManager.getConnection();
+        const conn = await ConnectionManager.getConnection();
         const x = await conn.query(SELECT_BY_ID,[id]);
-        // if(!x){
-        //     throw new ItemNotFoundException("book not found of id "+ id);
-        // }
+        if(!x){
+            throw new ItemNotFoundException("book not found of id "+ id);
+        }
         const row : ISQLITEBook = x.rows[0];
         const result = new SQLiteBookMapper().map(row);
         return result
@@ -107,15 +97,11 @@ export class BookRepository implements InitialzableRepository<IdentifiableBook> 
             logger.error("Fail to get Book of id : %s error : %o ", id,error as Error);
             throw new DatabaseException("Failed to get Cake of Id "+id)
         }
-        finally{
-            conn.release();
-        }
     }
     async create(item: IdentifiableBook): Promise<string> { //create book order
-        let conn!: PoolClient;
         try {
-            conn = await ConnectionManager.getConnection();
-
+                    const conn = await ConnectionManager.getConnection()
+        
             await conn.query(
                 INSERT_BOOK,
                 [
@@ -132,22 +118,19 @@ export class BookRepository implements InitialzableRepository<IdentifiableBook> 
                 ]
             );
 
-       
+       logger.info("success Create From Book")
         return item.getId();
             
         } catch (error) {
             logger.error("Create Book error happens here %o", error as Error);
-            throw new DatabaseException("Book create : Error happens here ");
-        } finally {
-            conn.release();
+            throw new DatabaseException("Book create : Error happens here " );
         }
 
     }
     async update(item: IdentifiableBook): Promise<void> {
-        let conn!: PoolClient;
         try {
-            conn = await ConnectionManager.getConnection();
-            await conn.query(UPDATE_BOOK, [
+        const conn = await ConnectionManager.getConnection();
+             await conn.query(UPDATE_BOOK, [
                 item.getId(),
                 item.getTitle(),
                 item.getAuthor(),
@@ -160,12 +143,11 @@ export class BookRepository implements InitialzableRepository<IdentifiableBook> 
                 item.getLanguage(),
                 item.getPublisher(),
             ]);
-            
-        } catch (error: unknown) {
-            logger.error("Fail to Update Book of id : %s error : %o ", item.getId(), error as Error);
-            throw new DatabaseException("Failed to Update Book of Id " + item.getId());
-        } finally {
-            conn.release();
+        logger.info("Book Updated");
+        }catch(error : unknown)
+        {
+            logger.error("Fail to Update Book of id : %s error : %o ", item.getId(),error as Error);
+            throw new DatabaseException("Failed to Update Book of Id "+item.getId())
         }
     }
 
@@ -176,7 +158,7 @@ export class BookRepository implements InitialzableRepository<IdentifiableBook> 
               try {
         const conn = await ConnectionManager.getConnection();
          await conn.query(DELETE_ID,[id]);
-      
+        logger.info("Book Deleted")
        
        
         }catch(error : unknown)

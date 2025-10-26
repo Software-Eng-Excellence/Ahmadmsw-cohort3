@@ -37,7 +37,7 @@ export interface ISQLITEOrder {
     id:string,
     quantity:number,
     price:number,
-    item_category: string,
+    item_categoty: string,
     item_id:string,
     
 }
@@ -56,7 +56,7 @@ export class SQLiteOrderMapper implements IMapper<{data:ISQLITEOrder, item: Item
                 id: data.getId(),
                 price: data.getPrice(),
                 quantity: data.getQuantity(),
-                item_category: data.getItem().getCategory(),
+                item_categoty: data.getItem().getCategory(),
                 item_id: data.getItem().getId()
             },
             item: data.getItem()

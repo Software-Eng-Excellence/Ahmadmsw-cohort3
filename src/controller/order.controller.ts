@@ -32,7 +32,7 @@ export class OrderController {
         }
     }
     public async createOrder(req: Request, res: Response) {
-        console.log("begin");
+        
         
      const order: IdentifiableOrder = JsonRequestFactory.createMapper(ItemCategoty.CAKE).map(req.body);
     console.log(order)

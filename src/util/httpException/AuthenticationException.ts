@@ -1,4 +1,5 @@
 import {Response} from "express"
+import { ApiException } from "../Exceptions/ApiException";
     export class AuthenticationException extends Error {
         constructor(message:string){
             super(message);
@@ -20,9 +21,9 @@ import {Response} from "express"
             this.name = "InvalidToeknExceptin"
         }
     }
-    export class AuthenticationTokenFailed extends Error{
+    export class AuthenticationTokenFailed extends ApiException{
         constructor(){
-            super("Authentication Token Error");
+            super(401,"Authentication Token Error",new Error("Authentication Token Error"));
         }
 
     }

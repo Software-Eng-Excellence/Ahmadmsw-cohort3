@@ -7,6 +7,11 @@ import { DatabaseException, ItemNotFoundException }from "../../util/Exceptions/R
 import { ConnectionManager } from "./connectionManager.repository";
 import {Item,ItemWithId} from "../../models/item.model"
 
+import {BookRepository} from "../postgre/Book.repository"
+import {ToyRepository} from "../postgre/Toy.Repository"
+import {CakeRepository} from "../postgre/Cake.repository"
+import { IRepository } from "../IRepository";
+
 import {IdentifiableOrderItem, IOrder} from "../../models/Iorder.model"
 import {SQLiteOrderMapper,ISQLITEOrder}from "../../mappers/CSVorder.mapper"
 import { PoolClient } from "pg";
@@ -92,6 +97,7 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
         let conn!: PoolClient;
         let result :any ;
         try {
+           
             conn = await ConnectionManager.getConnection();
             const x = await conn.query(SELECT_BY_ID, [id]);
             
@@ -101,7 +107,9 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
             }
             
             const row: ISQLITEOrder = x.rows[0];
-            const item = await this.itemRepository.getById(row.item_id);
+            const category = await this.getCategory(row);
+            const item = await category.getById(row.item_id);
+             
             if(item){
              result = new SQLiteOrderMapper().map({ data: row, item });
             }
@@ -173,6 +181,28 @@ export class OrderRepository implements InitialzableRepository<IdentifiableOrder
             conn.release();
         }
     }
+   async getCategory(order: ISQLITEOrder): Promise<IRepository<ItemWithId>> {
    
-
+       const category =  order.item_categoty;
+        console.log(category);
+       if (!category) {
+           throw new ItemNotFoundException("Item not found");
+       }
+       let cat: IRepository<ItemWithId> | null = null;
+       switch (category) {
+           case "book":
+               cat = new BookRepository();
+               break;
+           case "toy":
+               cat = new ToyRepository();
+               break;
+           case "cake":
+               cat = new CakeRepository();
+               break;
+       }
+         if (cat) { 
+            return cat;
+         }
+       throw new ItemNotFoundException("Item not found");
+   }
 }

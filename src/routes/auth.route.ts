@@ -3,6 +3,7 @@ import {Router} from "express";
 import { AuthenticationService } from "../services/Authentication.service";
 import {UserSerivce} from "../services/userManagement"
 import {AuthenticationController} from "../controller/auth.controller"
+import {authenticate} from "../middleware/auth.middlware"
 
 
 const app = Router();
@@ -17,7 +18,8 @@ app.route("/login")
 
     .post(authController.login.bind(authController));
 
-    
+app.route("/logout")
+    .get(authenticate, authController.logout.bind(authController));
 
 
 

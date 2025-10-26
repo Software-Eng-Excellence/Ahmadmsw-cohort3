@@ -4,6 +4,8 @@ import config from '../config';
 import { TokenPayload } from 'config/types';
 import {InvalidToeknExceptin,TokenExpiration,AuthenticationException} from "../util/httpException/AuthenticationException"
 import {ServiceException} from "../util/Exceptions/Service.Exception"
+import {Response} from 'express';
+import ms from 'ms';
 
 
 // ... inside AuthenticationService class ...
@@ -36,4 +38,14 @@ export class AuthenticationService {
         throw new ServiceException("Invalid Token",error)
     }
  }
+ setTokenIntoCookie(token:string, res:Response):void{
+    res.cookie  ('token', token, {
+        httpOnly: true,
+        secure: config.isProduction,
+        maxAge: 0.5 * 60 * 60 * 1000, // 0.5 hours
+    })
+}
+clear(res:Response):void{
+    res.clearCookie('token');       
+}
 }

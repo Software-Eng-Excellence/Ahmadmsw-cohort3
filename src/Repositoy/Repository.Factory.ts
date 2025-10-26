@@ -8,7 +8,7 @@ import { BookRepository } from "./postgre/Book.repository";
 import { ToyRepository } from "./postgre/Toy.Repository";
 import { DBType } from "../models/DBtypes.model";
 import {UserRpository} from "./postgre/user.repository"
-import {User} from "../models/user.model"
+
 
 
 

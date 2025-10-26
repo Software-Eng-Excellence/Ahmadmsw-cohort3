@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {AuthenticationService} from "../services/Authentication.service"
 
 import {UserSerivce} from "../services/userManagement"
+import { AuthReq } from "../config/types";
 
 export class AuthenticationController {
     constructor(private authService : AuthenticationService,private userService : UserSerivce ){
@@ -9,15 +10,24 @@ export class AuthenticationController {
     }
     async login(req:Request, rep:Response){
         
-        const{Email,password} = req.body;
-        if(!Email ||!password){
-            throw new Error("Missing parameters")
+        const{email,password} = req.body;
+        if(!email ||!password){
+            
         }
-        const UserId = await this.userService.ValidateUserExist(Email,password);
+        const UserId = await this.userService.ValidateUserExist(email,password);
+        const token = this.authService.generateToken(UserId);
+        this.authService.setTokenIntoCookie(token,rep);
         rep.status(200).json({
             message: "Login Succesfully !",
-            token : this.authService.generateToken(UserId)
+            
         })
 
+    }
+     logout(req:Request, rep:Response){// i use AuthReq to make sure user is authenticated and take the user id from there and logout
+
+        this.authService.clear(rep);
+        rep.status(200).json({
+            message: "Logout Successfully !"
+        })
     }
 }

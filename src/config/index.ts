@@ -1,8 +1,10 @@
 import dotenv from "dotenv"
+import stringValue from "ms"
 
 
 export default {
-
+   logDir: "./logs",
+   isProduction: process.env.NODE_ENV === "production",
    storagePath: {
       sqlite: "./src/data/orders.db"
    },

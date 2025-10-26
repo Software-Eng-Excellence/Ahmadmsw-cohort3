@@ -7,6 +7,7 @@ import cors from "cors"
 import requestLogger from "./middleware/requestLogger"
 import routes from "./routes"
 import { ApiException } from "./util/Exceptions/ApiException"
+import cookieParser from "cookie-parser"
 
 
 
@@ -31,6 +32,9 @@ app.listen(config.port, config.host, ()=>{
 });
 //add middlwares :
 app.use(requestLogger);
+
+
+app.use(cookieParser());
 
 
 //config routes :
