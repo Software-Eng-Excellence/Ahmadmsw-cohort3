@@ -16,9 +16,11 @@ export class AuthenticationController {
         }
         const UserId = await this.userService.ValidateUserExist(email,password);
         const token = this.authService.generateToken(UserId);
+        console.log("The Real Id here : " + UserId)
         this.authService.setTokenIntoCookie(token,rep);
         rep.status(200).json({
             message: "Login Succesfully !",
+            token: token
             
         })
 

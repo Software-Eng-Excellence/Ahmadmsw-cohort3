@@ -9,12 +9,10 @@ export class UserBuilder {
   private password!:string;
 
 
-  setId(id: string): UserBuilder {
-    this.id = uuidv4();
-    return this ;
-    
+  setId(id?: string): UserBuilder {
+    this.id = id || uuidv4(); // generate new UUID only if id not provided
+    return this;
   }
-
   setName(name: string): UserBuilder {
     this.name = name;
     return this;

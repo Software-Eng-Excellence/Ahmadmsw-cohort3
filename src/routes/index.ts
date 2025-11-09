@@ -15,7 +15,7 @@ routes.get("/", (req, res) => {
 
 });
 routes.use("/orders",authenticate, ordersRoutes);
-routes.use("/users",authenticate,UserRoutes);
+routes.use("/users",UserRoutes);
 routes.use("/auth",authRoute)
 
 

@@ -8,8 +8,7 @@ const authService = new AuthenticationService();
 export function authenticate(req: Request, res: Response, next: NextFunction) {
     //get Token From Header :
        
-        const authHeader = req.cookies.token;
-        const token = authHeader?.split(' ')[1]; // Extract token from "Bearer <token>"
+        const token = req.cookies?.token; // token is stored directly in the cookie
 
         //if no Token Throw Auth Error : 
         if (!token) {

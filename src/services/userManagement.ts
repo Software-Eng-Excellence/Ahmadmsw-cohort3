@@ -6,7 +6,7 @@ import { ServiceException } from "../util/Exceptions/Service.Exception";
 import {RepositoryFactory} from "../Repositoy/Repository.Factory"
 
 import { UserRpository } from "Repositoy/postgre/user.repository";
-
+import { ApiException } from "../util/Exceptions/ApiException";
     export class UserSerivce { 
 
         //create order
@@ -14,8 +14,11 @@ import { UserRpository } from "Repositoy/postgre/user.repository";
             //Validate Order
             
             if (!this.validateUser(user)) {
-                throw new ServiceException("Missing Parameters", new Error("Order must have a valid item, price and quantity"));
+                throw new ApiException(423,"Email Or pass missing", new Error("Email or password missing"));
                 
+            }
+            else if( await this.validateAlreadyExist(user.getEmail())){
+                throw new ApiException(422,"User Already Exist", new Error("User with this email already exists"));
             }
 
             //persist order
@@ -84,10 +87,17 @@ import { UserRpository } from "Repositoy/postgre/user.repository";
         
         return true; 
     }
+    public async validateAlreadyExist(id:string):Promise <boolean>{
+        const users = await this.getAllUsers();
+        const user = users.find((user) => user.getEmail() === id);
+        return user ? true : false;
+    }
+
+
     public async ValidateUserExist(email:string ,password:string):Promise<string>{
         const user = await (await this.getRepository()).getUserByEmail(email);
         if(!user){
-            throw new Error("user Note Found");
+            throw new ApiException(422,"user Note Found",new Error("user not found"));
         }
         if(user.getPassword() !== password){
             throw new Error("Password Invalid");

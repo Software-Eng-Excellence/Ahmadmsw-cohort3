@@ -21,7 +21,7 @@ export class AuthenticationService {
         return jwt.sign(
                 { user_id },           // Payload: Contains the user's ID
                 this.secretKey,       // Secret Key: Used for signing
-                { expiresIn: 200000} // Options: Sets expiration time
+                { expiresIn: 20000000} // Options: Sets expiration time
         );
 }
  verifyToken(token : string):TokenPayload{
@@ -40,7 +40,7 @@ export class AuthenticationService {
  }
  setTokenIntoCookie(token:string, res:Response):void{
     res.cookie  ('token', token, {
-        httpOnly: true,
+        httpOnly: false,
         secure: config.isProduction,
         maxAge: 0.5 * 60 * 60 * 1000, // 0.5 hours
     })

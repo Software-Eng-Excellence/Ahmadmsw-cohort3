@@ -13,7 +13,7 @@ export default {
        "postgresql://neondb_owner:npg_oSgBn6UVv8tR@ep-wandering-cherry-aday2d6t-pooler.c-2.us-east-1.aws.neon.tech/Orders?sslmode=require&channel_binding=require",
 
    },
-      port : process.env.PORT ? parseInt(process.env.PORT) : 3000,
+      port : process.env.PORT ? parseInt(process.env.PORT) : 5000,
       host: process.env.HOST || "localhost",
       auth : {
          secretKey : "secret123456",

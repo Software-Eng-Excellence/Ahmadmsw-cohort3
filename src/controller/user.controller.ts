@@ -1,7 +1,7 @@
 import { NextFunction,Request,Response } from "express";
 import { UserSerivce } from "../services/userManagement"
 import { ApiException } from "../util/Exceptions/ApiException";
-
+import { AuthReq } from "../config/types";
 
 import {User} from "../models/user.model"
 import{JsonUserRequestMapper} from "../mappers/user.mapper"
@@ -76,5 +76,22 @@ export class UserrController {
         res.status(200).json(user);
     }
 
+      public async getCurrentUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user_id } = req as AuthReq; // we attach user_id in the middleware
+      if (!user_id) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const user = await this.userserivce.getUserById(user_id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      next(new ApiException(400, "Failed to fetch current user", error as Error));
+    }
+  }
 
 }

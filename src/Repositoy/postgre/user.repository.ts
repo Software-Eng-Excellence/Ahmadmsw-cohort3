@@ -100,6 +100,7 @@ export class UserRpository implements InitialzableRepository<User> {
             }
 
             const row: IuserData = x.rows[0];
+            console.log("hello i am " + row);
             return new userMapper().map(row);
 
         } catch (error: unknown) {

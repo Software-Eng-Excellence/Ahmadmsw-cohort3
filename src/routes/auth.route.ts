@@ -19,7 +19,7 @@ app.route("/login")
     .post(authController.login.bind(authController));
 
 app.route("/logout")
-    .get(authenticate, authController.logout.bind(authController));
+    .post(authenticate, authController.logout.bind(authController));
 
 
 
