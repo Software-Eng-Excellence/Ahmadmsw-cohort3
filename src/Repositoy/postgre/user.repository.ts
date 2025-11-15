@@ -100,7 +100,7 @@ export class UserRpository implements InitialzableRepository<User> {
             }
 
             const row: IuserData = x.rows[0];
-            console.log("hello i am " + row);
+           
             return new userMapper().map(row);
 
         } catch (error: unknown) {
@@ -145,7 +145,7 @@ export class UserRpository implements InitialzableRepository<User> {
                 user.getPassword(),
                 user.getId()
             ]);
-
+           
             await conn.query("COMMIT");
         } catch (error: unknown) {
             throw new DatabaseException("Failed to UPDATE User of Id " + user.getId());
@@ -157,7 +157,7 @@ export class UserRpository implements InitialzableRepository<User> {
     async delete(id: string): Promise<void> {
         let conn!: PoolClient;
         try {
-            console.log(id);
+           
             conn = await ConnectionManager.getConnection();
             const user = await this.getById(id);
 

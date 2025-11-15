@@ -66,11 +66,12 @@ export class UserrController {
         }
         const JsMapper = new JsonUserRequestMapper();
         const user: User = JsMapper.map(req.body  )
+       
         if (!user) {
-                      console.log("Something is error")
+          console.log("Something is error")
         }
         if (user.getId() !== id) {
-             console.log("error")
+             console.log("error the Id is not appear here",user.getId())
         }
         await this.userserivce.updateUser(user);
         res.status(200).json(user);

@@ -47,6 +47,7 @@ import { ApiException } from "../util/Exceptions/ApiException";
 
             //persist order
             try {
+              
             const repo = await this.getRepository();
             await repo.update(user);
             }catch(error :unknown){

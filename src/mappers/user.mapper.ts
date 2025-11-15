@@ -43,7 +43,7 @@ import {UserBuilder} from "../models/builder/user.builder"
     map(data:any):User {
         
 
-        return new UserBuilder().setId(data.id).setName(data.name).setEmail(data.email).setPasswrod(data.password).build();
+        return new UserBuilder().setId(data.id).setName(data.Name).setEmail(data.Email).setPasswrod(data.Password).build();
     }
     reverseMap(data: User) {
         return {
