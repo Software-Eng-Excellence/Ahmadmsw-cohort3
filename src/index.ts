@@ -33,9 +33,7 @@ app.use(cors({
 
 
 
-app.listen(config.port, config.host, ()=>{
-    logger.info(`Server is running on port http://%s:%d`,config.host,config.port);
-});
+
 //add middlwares :
 app.use(requestLogger);
 
@@ -53,12 +51,23 @@ app.use((req, res, next)=>{
 });
 
 //config error handler :
-app.use((err : Error, req : express.Request, res : express.Response, next : express.NextFunction)=>{
-    if(err instanceof ApiException){
-       logger.error(`API Exception: ${err.message} ${err.status}`);
-       res.status(err.status).json({message: err.message});
-    }else {
-        logger.error(`Internal Server Error: ${err.message}`);
-        res.status(500).json({message: "Internal Server Error"});
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+
+    // ❗ Prevents "Cannot set headers after they are sent"
+    if (res.headersSent) {
+        return next(err);
     }
+
+    if (err instanceof ApiException) {
+        logger.error(`API Exception: ${err.message} ${err.status}`);
+        return res.status(err.status).json({ message: err.message });
+    }
+
+    logger.error(`Internal Server Error: ${err.message}`);
+    return res.status(500).json({ message: "Internal Server Error" });
+});
+
+
+app.listen(config.port, config.host, ()=>{
+    logger.info(`Server is running on port http://%s:%d`,config.host,config.port);
 });

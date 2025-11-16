@@ -1,15 +1,16 @@
-
+import { Role } from "../config/Permessions";
     export interface Iuser {
         getId():string
         getName(): string ;
         getEmail():string ;
-        
         getPassword():string;
+        getRole():string ;
+
 
     }
     export class User implements Iuser {
 
-        constructor( private id : string,  private Name : string,private Email: string, private password: string ){}
+        constructor( private id : string,  private Name : string,private Email: string, private password: string,private Role: Role ){}
        
         
 
@@ -24,6 +25,9 @@
         }
         getPassword(): string {
             return this.password
+        }
+        getRole(): Role {
+            return this.Role;
         }
 
     }

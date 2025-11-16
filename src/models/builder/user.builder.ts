@@ -1,5 +1,6 @@
 import {User} from "../user.model"
 import { v4 as uuidv4 } from "uuid";
+import { Role } from "../../config/Permessions";
 export class UserBuilder {
  
 
@@ -7,7 +8,7 @@ export class UserBuilder {
   private name!:string;
   private email!:string;
   private password!:string;
-
+  private Role!:Role;
 
   setId(id?: string): UserBuilder {
     this.id = id || uuidv4(); // generate new UUID only if id not provided
@@ -29,9 +30,13 @@ export class UserBuilder {
     return this;
     
   }
+  setRole(role?: Role): UserBuilder {
+    this.Role = role ?? Role.USER;
+    return this;
+  }
 
   build(): User {
-    return new User(this.id, this.name, this.email,this.password);
+    return new User(this.id, this.name, this.email,this.password,this.Role);
   }
 }
 

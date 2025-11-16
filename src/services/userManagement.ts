@@ -38,14 +38,14 @@ import { ApiException } from "../util/Exceptions/ApiException";
         
   
         }
-        //update order
+     
         public async updateUser(user:User): Promise<void> {
             //Validate Order
             if (!this.validateUser(user)) {
                 throw new ServiceException("Misiign Parameters", new Error("Order must have a valid item, price and quantity"));
             }
 
-            //persist order
+           
             try {
               
             const repo = await this.getRepository();
@@ -54,7 +54,7 @@ import { ApiException } from "../util/Exceptions/ApiException";
                 throw new Error ("User Not Found");
             }
         }
-        //delete order
+       
         public async deleteUser(id:string): Promise<void> {
             
             const repo = await this.getRepository();
@@ -95,7 +95,9 @@ import { ApiException } from "../util/Exceptions/ApiException";
     }
 
 
-    public async ValidateUserExist(email:string ,password:string):Promise<string>{
+
+
+    public async ValidateUserExist(email:string ,password:string):Promise<User>{
         const user = await (await this.getRepository()).getUserByEmail(email);
         if(!user){
             throw new ApiException(422,"user Note Found",new Error("user not found"));
@@ -103,7 +105,7 @@ import { ApiException } from "../util/Exceptions/ApiException";
         if(user.getPassword() !== password){
             throw new Error("Password Invalid");
         }
-        return (user.getId());
+        return (user);
     }
 
     //get repo :

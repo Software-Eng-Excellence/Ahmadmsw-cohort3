@@ -11,42 +11,53 @@ import { ConnectionManager } from "./connectionManager.repository";
 import {User} from "../../models/user.model"
 
 import { PoolClient } from "pg";
-
-
-
 const CREATE_TABLE = `
     CREATE TABLE IF NOT EXISTS "user" (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         email TEXT NOT NULL,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'user'
     )
-`
-            
-            
-const CREATE_USER_TABLE = `
-    INSERT INTO "user" (id, name, email, password)
-    VALUES ($1, $2, $3, $4)
-`
+`;
+const ALTER_TABLE = `
+    ALTER TABLE "user"
+    ADD COLUMN IF NOT EXISTS role VARCHAR(50) NOT NULL DEFAULT 'user';
+`;
 
 
-   const SELECT_ALL = `SELECT * FROM "user"`
+   
+           const CREATE_USER_TABLE = `
+    INSERT INTO "user" (id, name, email, password, role)
+    VALUES ($1, $2, $3, $4, $5)
+`;
 
 
-const SELECT_BY_ID = `SELECT * FROM "user" WHERE id = $1`
+            const SELECT_ALL = `
+    SELECT id, name, email, password, role 
+    FROM "user"
+`;
 
+            const SELECT_BY_ID = `
+    SELECT id, name, email, password, role
+    FROM "user"
+    WHERE id = $1
+`;
 
-    const DELETE_BY_ID = `DELETE FROM "user" WHERE id = $1`
+            const DELETE_BY_ID = `
+    DELETE FROM "user" WHERE id = $1
+`;
 
 const UPDATE_BY_ID = `
     UPDATE "user"
     SET name = $1,
         email = $2,
-        password = $3
-    WHERE id = $4
-`
+        password = $3,
+        role = $4
+    WHERE id = $5
+`;
 
-    const SELECT_BY_EMAIL = `SELECT * FROM "user" WHERE email = $1`        
+            const SELECT_BY_EMAIL = `SELECT id, name, email, password, role FROM "user" WHERE email = $1`    
             
 
 
@@ -59,6 +70,7 @@ export class UserRpository implements InitialzableRepository<User> {
         try {
             conn = await ConnectionManager.getConnection();
             await conn.query(CREATE_TABLE);
+            await conn.query(ALTER_TABLE);
             
         } catch (error) {
             throw error;
@@ -120,7 +132,8 @@ export class UserRpository implements InitialzableRepository<User> {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getPassword()
+                user.getPassword(),
+                user.getRole()
             ]);
 
             await conn.query("COMMIT");
@@ -143,7 +156,8 @@ export class UserRpository implements InitialzableRepository<User> {
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getId()
+                user.getId(),
+                user.getRole()
             ]);
            
             await conn.query("COMMIT");

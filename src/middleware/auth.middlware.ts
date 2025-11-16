@@ -8,11 +8,19 @@ const authService = new AuthenticationService();
 export function authenticate(req: Request, res: Response, next: NextFunction) {
     //get Token From Header :
        
-        const token = req.cookies?.token; // token is stored directly in the cookie
+        let token = req.cookies?.token; // token is stored directly in the cookie
+        const refresh_token = req.cookies.refreshtoken
 
         //if no Token Throw Auth Error : 
         if (!token) {
-            return next(new AuthenticationTokenFailed());
+            if(!refresh_token){
+                throw new AuthenticationTokenFailed()
+            }
+            
+            const newToken = authService.RefreshToken(refresh_token);
+            authService.setTokenIntoCookie(newToken,res)
+            token = newToken;
+            
         }
       
         
@@ -21,8 +29,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
         
                 
                 const payload = authService.verifyToken(token);
-                console.log(payload.user_id);
-                (req as AuthReq).user_id = payload.user_id; // Attach userId to request
+               
+                (req as AuthReq).user = payload // Attach userId to request
                 next(); // Proceed to the next middleware or route handler
        
 }
