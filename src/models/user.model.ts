@@ -1,6 +1,6 @@
 import { Role } from "../config/Permessions";
     export interface Iuser {
-        getId():string
+        getId():string ;
         getName(): string ;
         getEmail():string ;
         getPassword():string;

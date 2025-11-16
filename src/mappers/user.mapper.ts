@@ -9,11 +9,11 @@ import {Role} from "../config/Permessions"
         name:string ,
         email:string,
         password:string
-        Role : Role
+        role : Role
     }
     export class userMapper implements IMapper<IuserData,User> {
         map(data: IuserData): User {
-        return new UserBuilder().setId(data.id).setName(data.name).setEmail(data.email).setPasswrod(data.password).setRole(data.Role).build();
+        return new UserBuilder().setId(data.id).setName(data.name).setEmail(data.email).setPasswrod(data.password).setRole(data.role).build();
         }
         reverseMap(data: User): IuserData {
             return {
@@ -21,7 +21,7 @@ import {Role} from "../config/Permessions"
                 name : data.getName(),
                 email : data.getEmail(),
                 password : data.getPassword(),
-                Role : data.getRole()
+                role : data.getRole()
 
             }
         }
@@ -29,17 +29,27 @@ import {Role} from "../config/Permessions"
         
     }
 
-    export class JsonUserRequestMapper implements IMapper<any,User>{
-    
-    map(data:any):User {
-        
+export class JsonUserRequestMapper implements IMapper<any, User> {
 
-        return new UserBuilder().setId(data.id).setName(data.Name).setEmail(data.Email).setPasswrod(data.Password).build();
-    }
-    reverseMap(data: User) {
-        return {
-            
-            ...data
+    map(data: any): User {
+        
+        if (!data) {
+            console.error("Mapper error: data is undefined or null");
+            return new UserBuilder().build(); // returns empty user safely
         }
+        
+        console.log(data)
+        return new UserBuilder()
+            .setId(data?.id)                 // safe
+            .setName(data?.Name ?? "")       // safe
+            .setEmail(data?.Email ?? "")     // safe
+            .setPasswrod(data?.Password ?? "")
+            .setRole(data?.Role)
+            .build();
+    }
+
+    reverseMap(data: User) {
+        
+        return { ...data };
     }
 }

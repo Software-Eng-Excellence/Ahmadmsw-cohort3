@@ -17,7 +17,8 @@ export class AuthenticationController {
         }
         const User = await this.userService.ValidateUserExist(email,password);
         const userPayload : UserPayload = {user_id:User.getId(), Role : User.getRole()}
-        this.authService.persistAuth(rep,userPayload)
+        console.log("The role from controller is "+ userPayload.Role);
+        await this.authService.persistAuth(rep,userPayload)
     return rep.status(200).json({
     message: "Login Successfully!",
 });

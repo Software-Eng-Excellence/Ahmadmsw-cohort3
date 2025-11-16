@@ -24,6 +24,7 @@ import { ApiException } from "../util/Exceptions/ApiException";
             //persist order
             const repo = await this.getRepository();
             
+            
             const createUser = await repo.create(user);
             return createUser;
         }
@@ -44,8 +45,8 @@ import { ApiException } from "../util/Exceptions/ApiException";
             if (!this.validateUser(user)) {
                 throw new ServiceException("Misiign Parameters", new Error("Order must have a valid item, price and quantity"));
             }
-
-           
+            
+           console.log(user)
             try {
               
             const repo = await this.getRepository();
@@ -80,7 +81,7 @@ import { ApiException } from "../util/Exceptions/ApiException";
 
         //validate order
         private validateUser(user:User): boolean { 
-           if( !user.getEmail || !user.getPassword) {
+           if( !user.getEmail() || !user.getPassword()) {
             throw new ServiceException("Missung Parameters", new Error("Missing Parameteres"));
                
            }
@@ -88,11 +89,13 @@ import { ApiException } from "../util/Exceptions/ApiException";
         
         return true; 
     }
-    public async validateAlreadyExist(id:string):Promise <boolean>{
-        const users = await this.getAllUsers();
-        const user = users.find((user) => user.getEmail() === id);
-        return user ? true : false;
-    }
+public async validateAlreadyExist(email: string): Promise<boolean> {
+    console.log("from validation :" + email)
+    const repo = await this.getRepository();
+    const user = await repo.getUserByEmail(email);
+    return !!user;
+}
+
 
 
 

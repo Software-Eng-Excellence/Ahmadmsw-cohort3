@@ -53,6 +53,7 @@ generaterefreshToken(payload:UserPayload):string {
         res.cookie  ('refreshtoken', refresh_token, {
         httpOnly: false,
         secure: config.isProduction,
+        sameSite : 'lax',
         maxAge: this.refreshTokenExpiration // 0.5 hours
     })
  }
@@ -71,7 +72,8 @@ generaterefreshToken(payload:UserPayload):string {
  setTokenIntoCookie(token:string, res:Response):void{
     res.cookie  ('token', token, {
         httpOnly: false,
-        secure: config.isProduction,
+        secure: false,
+        sameSite : 'lax',
         maxAge: 0.5 * 60 * 60 * 1000, // 0.5 hours
     })
 }
@@ -84,6 +86,7 @@ async persistAuth(res : Response,payload:UserPayload){
         
     
      const token = this.generateToken(payload);
+     console.log(token);
      const refresh_token = this.generaterefreshToken(payload);
      this.setTokenIntoCookie(token,res);
      this.setRefrshTokenIntoCookie(refresh_token,res)

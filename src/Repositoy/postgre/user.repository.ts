@@ -127,14 +127,15 @@ export class UserRpository implements InitialzableRepository<User> {
         try {
             conn = await ConnectionManager.getConnection();
             await conn.query("BEGIN TRANSACTION");
+            
+           await conn.query(CREATE_USER_TABLE, [
+            user.getId(),       // $1 → id
+           user.getName(),     // $2 → name
+           user.getEmail(),    // $3 → email
+           user.getPassword(), // $4 → password
+           user.getRole()      // $5 → role
+          ]);
 
-            await conn.query(CREATE_USER_TABLE, [
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getRole()
-            ]);
 
             await conn.query("COMMIT");
             return user.getId();
@@ -151,13 +152,14 @@ export class UserRpository implements InitialzableRepository<User> {
         try {
             conn = await ConnectionManager.getConnection();
             await conn.query("BEGIN TRANSACTION");
-
+            
             await conn.query(UPDATE_BY_ID, [
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getId(),
-                user.getRole()
+                user.getRole(),
+                user.getId()
+                
             ]);
            
             await conn.query("COMMIT");
@@ -184,21 +186,31 @@ export class UserRpository implements InitialzableRepository<User> {
             conn.release();
         }
     }
-    async getUserByEmail(email:string):Promise<User>{
-        let mapping = new userMapper();
-        let conn!:PoolClient;
-        try{
-            conn = await ConnectionManager.getConnection();
-            const data = await conn.query(SELECT_BY_EMAIL,[email]);
-            
-            const user : IuserData = data.rows[0];
-            
-            const Puser = mapping.map(user);
-            return Puser
-        }catch(error){
-            throw new DatabaseException("Failed to get User of Email " + email);
+async getUserByEmail(email: string): Promise<User | null> {
+
+    let mapping = new userMapper();
+    let conn!: PoolClient;
+
+    try {
+        conn = await ConnectionManager.getConnection();
+        const data = await conn.query(SELECT_BY_EMAIL, [email]);
+
+        if (!data.rows || data.rows.length === 0) {
+            // No user found, return null
+            return null;
         }
+
+        const user: IuserData = data.rows[0];
+        const Puser = mapping.map(user);
+        return Puser;
+
+    } catch (error) {
+        throw new DatabaseException("Failed to get user by email: " + error);
+    } finally {
+        if (conn) conn.release();
     }
+}
+
 
 
 }

@@ -14,7 +14,8 @@ export function hasPermession(permession : Permession) {
             throw new ApiException(403 , "Not Authenticated" , new Error("Not Authenticated"));
         }
         const UserRole = authReq.user.Role;
-        console.log(RolePermession[UserRole]);
+        
+        
         if(!RolePermession[UserRole]){
             logger.error("invalid Role")
             throw new InvalidRoleException(new Error("No role Appears here "),UserRole)
@@ -34,6 +35,7 @@ export function hasRole(Role : Role[]){
             throw new ApiException(403, "Not Authenticated", new Error("Not Authenticated"));
         }
         const userRole = authReq.user.Role;
+   
         if (!RolePermession[userRole]) {
             logger.error("Invalid Role");
             throw new InvalidRoleException(new Error("No role appears here"), userRole);

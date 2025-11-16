@@ -2,7 +2,7 @@ import { NextFunction,Request,Response } from "express";
 import { UserSerivce } from "../services/userManagement"
 import { ApiException } from "../util/Exceptions/ApiException";
 import { AuthReq } from "../config/types";
-
+import  logger  from "../util/logger";
 import {User} from "../models/user.model"
 import{JsonUserRequestMapper} from "../mappers/user.mapper"
 
@@ -34,16 +34,22 @@ export class UserrController {
     }
     public async createUser(req: Request, res: Response) {
    
+   try {
     const JsMapper = new JsonUserRequestMapper();
      const user: User = JsMapper.map(req.body  )
+    
      
    
     if (!user) {
         throw new Error("user is required to create user");
     }
       
-     const newOrder = await this.userserivce.createUser(user);
-    res.status(201).json(newOrder);
+     const newUser = await this.userserivce.createUser(user);
+          
+    res.status(201).json(newUser);
+  }catch(error){
+    throw new Error("error in create")
+  }
 }
 
     public async deleteuser(req: Request, res: Response,next:NextFunction) {
@@ -62,16 +68,20 @@ export class UserrController {
      public async updateUser(req: Request, res: Response , next : NextFunction) {
         const id = req.params.id;
         if (!id) {
-         console.log("please enter id ")
+         logger.error("No id in the url" + id);
+         throw new ApiException(404,"somthing is wrong",new Error("something is wrong here"));
         }
         const JsMapper = new JsonUserRequestMapper();
         const user: User = JsMapper.map(req.body  )
        
+       
         if (!user) {
-          console.log("Something is error")
+          logger.warn ("Missing Parameters")
+          throw new ApiException(405,"Missing Parameters", new Error("Missing Parameters"))
         }
         if (user.getId() !== id) {
-             console.log("error the Id is not appear here",user.getId())
+          logger.warn ("No user in the DataBase with id ",user.getId())
+          throw new ApiException(405,"No user Found", new Error("no User"))
         }
         await this.userserivce.updateUser(user);
         res.status(200).json(user);
