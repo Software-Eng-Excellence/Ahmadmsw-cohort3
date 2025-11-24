@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 
-export async function readJsonFile(filePath: string , includedHeader : boolean = true) {
+export async function readJsonFile<T>(filePath: string , includedHeader : boolean = true): Promise<T> {
 
         try {
     const fileContent = await fs.readFile(filePath, 'utf8');
@@ -17,11 +17,13 @@ export async function readJsonFile(filePath: string , includedHeader : boolean =
 
 
 
-export async function writeJsonFile(filePath: string, data: string): Promise<string> {
+export async function writeJsonFile(filePath: string, data: { [key: string]: string }[]): Promise<void> {
     try {
-    const csvContent = JSON.stringify(data);
-    await fs.writeFile(filePath, data, 'utf8');
-    return Promise.resolve(data); // i can here dont't use this ? 
+ 
+    const JsonContent = JSON.stringify(data, null, 2); // pretty print with 2 spaces
+
+    await fs.writeFile(filePath, JsonContent, 'utf8');
+   
 
 } catch (error) {
         return Promise.reject(error); 

@@ -1,71 +1,126 @@
-import path from 'path';
-import {readCsvFile} from './util/parser'
-import logger from './util/logger';
-import {readJsonFile} from './util/JsonParser';
+
+import path from "path";
+import {readCsvFile} from "./util/parser"
+import {CSVCakeMapper} from "./mappers/Cake.mapper"
+import {CSVOrderMapper} from "./mappers/CSVorder.mapper"
+ import {JSONOrderMapper} from "./mappers/CSVorder.mapper";
+// import {XMLOrderMapper} from "./mappers/CSVorder.mapper";
+import {CakeRepository} from "./Repositoy/file/Cake.model.repository"
+import {OrderBuilder}from "./models/builder/order.builder";
+import { CakeBuilder } from "./models/builder/cake.builder"; 
+import {BookRepository} from "./Repositoy/file/Book.model.repository"
+
+
+import {BookBuilder} from "./models/builder/book.builder"
+
+
+
 import {readXmlFile} from './util/XMLParser'
+ import {XMLToyMapper} from "./mappers/Toy.mapper"
+ import {writeXmlFile} from "./util/XMLParser"
+// import {readXMLRows} from "./util/XMLParser"
 
-const filePath = path.resolve(__dirname, './data/Cake orders.csv');
-const filePath2 = path.resolve(__dirname, './data/book orders.JSON'); // Ensure the path is correct for your environment
-const filePath3 = path.resolve(__dirname, './data/toy orders.XML'); // Ensure the path is correct for your environment
 
-export class CsvParser { 
-    async parse() {
-        try {
-       const products = await readCsvFile(filePath)//why i need to set the file path here ? // because this is the file that you want to read from// and what this function do ? // it reads the csv file and returns a 2D array of strings// so i can use it in my code ? // yes, you can use it to get the data from the csv file
-       logger.info(products)
-        return products;
-        } catch (error) {
-            logger.error(error);
-            throw new Error("Error reading CSV file");
-        }
-    }
+import {readJsonFile} from "./util/JsonParser";
+import {JSONBookMapper} from "./mappers/Book.mapper";
+
+import {ToyRepository} from "./Repositoy/file/Toy.model.repository"
+import {ToyBuilder} from "./models/builder/toy.builder"
+
+
+
+
+
+import logger from './util/logger';
+import { on } from "events";
+import { Toy } from "models/toy.model";
+import { read } from "fs";
+
+
+
+async function main(){
+
+    const Repository = new BookRepository("./src/data/book orders.json");
+    const data = await Repository.getById("2100");
+    console.log(data);
+
 }
+// main();
+
+async function main1(){
+    const Repository = new BookRepository("./src/data/book orders.json");
+    const Bookdata = new BookBuilder().setAuthor("Ahmad").setTitle("Learn TypeScript").setGenre("Programming").setFormat("Ebook").setLanguage("English").setPublisher("Self-Published").setSpecialEdition("No").setPackaging("Digital").build();
+    const data = new OrderBuilder().setItem(Bookdata).setPrice(29.99).setQuantity(1).setId("30002").build();
+     const ss = await Repository.create(data);
+     console.log(ss);
 
 
+}
+// main1();
+
+async function main11(){
+    const Repository = new BookRepository("./src/data/book orders.json");
+    const data = await Repository.delete("30002");
+    console
+}
+// main11();
 
 
+async function main22(){
+    const Repository = new ToyRepository("./src/data/toy orders.xml");
 
+
+    const data = new ToyBuilder()
+        
+        
+        .setType("Educational")
+        .setAgeGroup("3-5 years")
+        .setBrand("LeapFrog")
+        .setMaterial("Plastic")
+        .setBatteryRequired("No")
+        .setEducational("Alphabet Learning")
+        
+        .build();
+
+        const order = new OrderBuilder()
+        .setId("4001")
+        .setItem(data)
+        .setPrice(24.99)
+        .setQuantity(1)
+        .build();
+    const s =  await Repository.create(order);
+
+    console.log(s);
+
+}
+main22();
+//  async function main2(){
     
+//   const toydata = await readXmlFile<{ data: { row: { [key: string]: string }[] } }>("src/data/toy orders.xml");
+//   const rows = toydata.data.row;
+ 
+   
+//    const toyMapper = new XMLToyMapper();
+//        const orderMapper = new XMLOrderMapper(toyMapper);
 
+//   const xmlOrders = rows.map(row => orderMapper.map(row));
+//   logger.info("XML orders mapped successfully:\n %o", xmlOrders);
+ 
 
-export class JsonParser  {
-    async parse() {
-        try {
-            const products = await readJsonFile(filePath2);
+   
+// }
+// // main2();
 
-           logger.info(products);//here i will get an object
-            return products;
-        } catch (error) {
-            logger.error(error);
-            throw new Error("Error reading JSON file");
-        }
-    }
-}
+// async function main3(){
+//     const jsonData = await readJsonFile<{ [key: string]: string }[]>("./src/data/book orders.json");
+    
+//     const bookMapper = new JSONBookMapper();
+//     const orderMapper = new JSONOrderMapper(bookMapper);
 
+//     const rows = jsonData.map(row => orderMapper.map(row));
+    
+    
+// console.log(rows);
+// }
 
-
-export class xmlparser {
-
-    async parse(){
-        try{
-        
-         const rawRecords = await readXmlFile(filePath3);
-
-      
-        // Ensure rawRecords is an array of objects
-            logger.info(rawRecords.data.row);
-        return rawRecords ;
-        
-        }
-        catch(error){
-            throw new Error("Error reading XML file");
-        }
-    }
-}
-
-new xmlparser().parse();
-// new JsonParser().parse();
-// new CsvParser().parse()
-
-
-
+ //main3();
